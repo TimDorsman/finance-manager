@@ -12,7 +12,7 @@ const items = computed<NavigationMenuItem[]>(() => {
 	return [
 		{
 			label: "Overview",
-			to: "/overview",
+			to: "/",
 		},
 		{
 			label: "Catalog",

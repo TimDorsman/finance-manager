@@ -14,7 +14,8 @@ export const useSuppliesRepository = () => {
 				image,
 				supply_groups (
 					id,
-					name
+					name,
+					color
 				)
 			`
 			)
