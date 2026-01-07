@@ -4,7 +4,7 @@
 	<div class="min-h-screen h-full">
 		<UApp>
 			<Header />
-			<UContainer class="mx-auto">
+			<UContainer class="mx-auto relative py-8">
 				<NuxtPage />
 			</UContainer>
 		</UApp>

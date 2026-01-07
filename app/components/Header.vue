@@ -4,26 +4,46 @@ import type { NavigationMenuItem } from "@nuxt/ui";
 const user = useSupabaseUser();
 const supabase = useSupabaseClient();
 
-const items = computed<NavigationMenuItem[]>(() => [
-	{
-		label: "Overview",
-		to: "/overview",
-	},
-	{
-		label: "Catalog",
-		to: "/catalog",
-	},
-	{
-		label: "Out of stock",
-		to: "/out-of-stock",
-	},
-]);
+const items = computed<NavigationMenuItem[]>(() => {
+	if (!user.value) {
+		return [];
+	}
+
+	return [
+		{
+			label: "Overview",
+			to: "/overview",
+		},
+		{
+			label: "Catalog",
+			to: "/catalog",
+		},
+		{
+			label: "Out of stock",
+			to: "/out-of-stock",
+		},
+	];
+});
+
+const handleLogout = async () => {
+	await supabase.auth.signOut();
+	await navigateTo("/auth");
+};
 </script>
 
 <template>
-	<UHeader>
+	<UHeader
+		:toggle="{
+			color: 'primary',
+			variant: 'subtle',
+			class: 'rounded-full',
+		}"
+	>
 		<template #title>
-			<p>Finance Manager</p>
+			<div class="flex items-center gap-2 w-auto">
+				<img src="/images/logo.png" alt="logo" class="w-8 h-8" />
+				<p>Finance Manager</p>
+			</div>
 		</template>
 
 		<UNavigationMenu :items="items" />
@@ -34,7 +54,7 @@ const items = computed<NavigationMenuItem[]>(() => [
 				v-if="user"
 				:size="20"
 				class="cursor-pointer"
-				@click="supabase.auth.signOut()"
+				@click="handleLogout"
 			/>
 		</template>
 	</UHeader>

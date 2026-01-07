@@ -1,9 +1,16 @@
-import { defineNuxtRouteMiddleware, navigateTo } from "nuxt/app";
-
 export default defineNuxtRouteMiddleware((to) => {
-	const user = useSupabaseUser();
+	const session = useSupabaseSession();
 
-	if (!user.value && to.path !== "/auth") {
+	// Guest-only page
+	if (to.path === "/auth") {
+		if (session.value) {
+			return navigateTo("/overview");
+		}
+		return;
+	}
+
+	// Everything else is auth-only
+	if (!session.value) {
 		return navigateTo("/auth");
 	}
 });

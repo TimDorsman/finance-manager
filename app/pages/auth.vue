@@ -1,24 +1,44 @@
 <script setup lang="ts">
-const user = useSupabaseUser();
+import * as z from "zod";
+import type { FormSubmitEvent, AuthFormField } from "@nuxt/ui";
 
-if (user.value) {
-	navigateTo("/overview");
-}
+const fields: AuthFormField[] = [
+	{
+		name: "email",
+		type: "email",
+		label: "Email",
+		placeholder: "Enter your email",
+		required: true,
+	},
+	{
+		name: "password",
+		label: "Password",
+		type: "password",
+		placeholder: "Enter your password",
+		required: true,
+	},
+];
+
+const schema = z.object({
+	email: z.email("Invalid email"),
+	password: z
+		.string("Password is required")
+		.min(8, "Must be at least 8 characters"),
+});
+
+type Schema = z.output<typeof schema>;
 
 const supabase = useSupabaseClient();
 
-const state = reactive({
-	email: "",
-	password: "",
-});
-
 const error = ref<string | null>(null);
 
-async function onSubmit() {
+async function onSubmit(payload: FormSubmitEvent<Schema>) {
+	const { email, password } = payload.data;
 	error.value = null;
+
 	const { error: errorResponse } = await supabase.auth.signInWithPassword({
-		email: state.email,
-		password: state.password,
+		email,
+		password,
 	});
 
 	if (errorResponse) {
@@ -26,9 +46,8 @@ async function onSubmit() {
 		return;
 	}
 
-	navigateTo("/overview");
+	await navigateTo("/overview");
 }
-
 function onUpdateOpen(isOpen: boolean) {
 	if (!isOpen) {
 		// User closed the alert
@@ -38,32 +57,30 @@ function onUpdateOpen(isOpen: boolean) {
 </script>
 
 <template>
-	<div class="grid grid-cols-1 place-items-center">
-		<div>
-			<UForm
-				:state="state"
-				class="p-4 border w-fit rounded-lg mx-auto"
-				@submit.prevent="onSubmit"
-			>
-				<UFormField label="Email" name="email">
-					<UInput type="email" v-model="state.email" />
-				</UFormField>
+	<main class="flex-1 flex justify-center">
+		<div
+			class="flex flex-col items-center justify-center gap-4 pt-[10vh] md:pt-[25vh]"
+		>
+			<UPageCard class="w-full max-w-md">
+				<UAuthForm
+					:schema="schema"
+					title="Login"
+					description="Enter your credentials to access your account."
+					icon="i-lucide-user"
+					:fields="fields"
+					@submit.prevent="onSubmit"
+				/>
 
-				<UFormField label="Password" name="password">
-					<UInput v-model="state.password" type="password" />
-				</UFormField>
-
-				<UButton type="submit">Submit</UButton>
-			</UForm>
-			<UAlert
-				v-if="error"
-				title="Invalid credentials"
-				:description="error"
-				color="error"
-				variant="outline"
-				close
-				@update:open="onUpdateOpen"
-			/>
+				<UAlert
+					v-if="error"
+					:title="error"
+					color="error"
+					variant="soft"
+					close
+					class="mt-2"
+					@update:open="onUpdateOpen"
+				/>
+			</UPageCard>
 		</div>
-	</div>
+	</main>
 </template>
