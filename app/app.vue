@@ -1,5 +1,5 @@
 <template>
-	<UApp class>
+	<UApp>
 		<AppHeader />
 
 		<UContainer class="py-4">
