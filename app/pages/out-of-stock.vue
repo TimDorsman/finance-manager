@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import SupplyCard from "~/components/card/SupplyCard.vue";
 import { useOutOfStockSuppliesService } from "~/services/outOfStockSupplies.service";
 import type { SupplyListItem } from "~/types/supply";
 
@@ -52,50 +51,52 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-	<IconLoader
-		class="mx-auto mb-4 animate-spin duration-4000"
-		:size="48"
-		v-if="supplies === null"
-	/>
-	<div
-		v-else-if="supplies.length === 0"
-		class="flex flex-col items-center gap-4"
-	>
-		<UEmpty
-			icon="i-lucide-check-circle-2"
-			title="All supplies are in stock"
-			description="You have no out of stock supplies."
-			:actions="[
-				{
-					label: 'Go to catalog',
-					icon: 'i-lucide-arrow-left',
-					to: '/catalog',
-				},
-			]"
+	<div class="h-full w-full flex items-center justify-center">
+		<IconLoader
+			class="mx-auto mb-4 animate-spin duration-4000"
+			:size="48"
+			v-if="supplies === null"
 		/>
-	</div>
-
-	<template v-else>
-		<div class="w-fit mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
-			<SupplyCard
-				v-for="supply in supplies"
-				:key="supply.id"
-				:name="supply.name"
-				:image="supply.image"
-				:id="supply.id"
-			>
-				<template #buttons>
-					<UButton
-						variant="outline"
-						size="sm"
-						color="error"
-						class="cursor-pointer"
-						@click="markOutOfStockSupply(supply.id)"
-					>
-						Restocked
-					</UButton>
-				</template>
-			</SupplyCard>
+		<div
+			v-else-if="supplies.length === 0"
+			class="flex flex-col items-center gap-4"
+		>
+			<UEmpty
+				icon="i-lucide-check-circle-2"
+				title="All supplies are in stock"
+				description="There are no supplies out of stock at the moment."
+				:actions="[
+					{
+						label: 'Go to catalog',
+						icon: 'i-lucide-arrow-left',
+						to: '/catalog',
+					},
+				]"
+			/>
 		</div>
-	</template>
+
+		<template v-else>
+			<div class="w-fit mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<SupplyCard
+					v-for="supply in supplies"
+					:key="supply.id"
+					:name="supply.name"
+					:image="supply.image"
+					:id="supply.id"
+				>
+					<template #buttons>
+						<UButton
+							variant="outline"
+							size="sm"
+							color="error"
+							class="cursor-pointer"
+							@click="markOutOfStockSupply(supply.id)"
+						>
+							Restocked
+						</UButton>
+					</template>
+				</SupplyCard>
+			</div>
+		</template>
+	</div>
 </template>

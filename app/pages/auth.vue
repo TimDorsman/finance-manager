@@ -46,7 +46,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 		return;
 	}
 
-	await navigateTo("/overview");
+	await navigateTo("/");
 }
 function onUpdateOpen(isOpen: boolean) {
 	if (!isOpen) {
@@ -57,10 +57,8 @@ function onUpdateOpen(isOpen: boolean) {
 </script>
 
 <template>
-	<main class="flex-1 flex justify-center">
-		<div
-			class="flex flex-col items-center justify-center gap-4 pt-[10vh] md:pt-[25vh]"
-		>
+	<main class="flex-1 flex justify-center mt-[10vh] md:mt-[20vh]">
+		<div class="flex flex-col items-center justify-center gap-4">
 			<UPageCard class="w-full max-w-md">
 				<UAuthForm
 					:schema="schema"

@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware((to) => {
 	// Guest-only page
 	if (to.path === "/auth") {
 		if (session.value) {
-			return navigateTo("/overview");
+			return navigateTo("/");
 		}
 		return;
 	}
