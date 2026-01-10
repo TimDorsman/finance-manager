@@ -32,8 +32,6 @@ const description = computed(() => {
 });
 
 const handleError = () => clearError({ redirect: "/" });
-
-console.log(props.error);
 </script>
 
 <template>
