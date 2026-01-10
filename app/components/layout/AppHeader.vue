@@ -12,15 +12,31 @@ const items = computed<NavigationMenuItem[]>(() => {
 	return [
 		{
 			label: "Overview",
+			icon: "i-lucide-home",
 			to: "/",
 		},
 		{
-			label: "Catalog",
-			to: "/catalog",
+			label: "Budget planner",
+			icon: "i-lucide-pie-chart",
+			to: "/finance",
 		},
 		{
-			label: "Out of stock",
-			to: "/out-of-stock",
+			label: "Shopping",
+			icon: "i-lucide-shopping-cart",
+			children: [
+				{
+					label: "Catalog",
+					icon: "i-lucide-box",
+					description: "Browse supplies to manage your inventory",
+					to: "/catalog",
+				},
+				{
+					label: "Out of stock",
+					icon: "i-lucide-alert-circle",
+					description: "View and manage out of stock supplies",
+					to: "/out-of-stock",
+				},
+			],
 		},
 	];
 });
@@ -46,7 +62,9 @@ const handleLogout = async () => {
 			</div>
 		</template>
 
-		<UNavigationMenu :items="items" />
+		<ClientOnly>
+			<UNavigationMenu :items="items" />
+		</ClientOnly>
 
 		<template #right>
 			<UColorModeButton />
@@ -56,6 +74,16 @@ const handleLogout = async () => {
 				class="cursor-pointer"
 				@click="handleLogout"
 			/>
+		</template>
+
+		<template #body>
+			<ClientOnly>
+				<UNavigationMenu
+					:items="items"
+					orientation="vertical"
+					class="-mx-2.5"
+				/>
+			</ClientOnly>
 		</template>
 	</UHeader>
 </template>

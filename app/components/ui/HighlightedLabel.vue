@@ -1,16 +1,28 @@
 <script setup lang="ts">
 import { colord } from "colord";
 
-defineProps<{ color: string }>();
+const props = defineProps<{ color: string }>();
+const colorMode = useColorMode();
+
+const colorStyle = computed(() => {
+	if (colorMode.value === "light") {
+		return {
+			backgroundColor: colord(props.color).alpha(0.3).toHex(),
+			color: colord(props.color).darken(0.4).toHex(),
+		};
+	}
+
+	return {
+		backgroundColor: colord(props.color).alpha(0.6).toHex(),
+		color: colord(props.color).lighten(0.4).toHex(),
+	};
+});
 </script>
 
 <template>
 	<span
-		class="text-lg font-semibold my-4 py-0.5 px-1 rounded border"
-		:style="{
-			borderColor: color,
-			color: colord(color).lighten(0.25).toHex(),
-		}"
+		class="text-lg font-semibold my-4 py-0.5 px-2 rounded"
+		:style="colorStyle"
 	>
 		<slot />
 	</span>

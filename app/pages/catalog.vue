@@ -13,8 +13,8 @@ const { fetchSuppliesOrderedByGroup, markSupplyOutOfStock } =
 const supplies = ref<Map<string, SupplyListItemByGroup[]>>(new Map());
 
 onMounted(async () => {
-	const response =
-		(await fetchSuppliesOrderedByGroup()) as SupplyListItemByGroup[];
+	const { data } = await fetchSuppliesOrderedByGroup();
+	const response = (data.value ?? []) as SupplyListItemByGroup[];
 
 	const mappedSupplies = new Map<string, SupplyListItemByGroup[]>();
 	response.forEach((supply: SupplyListItemByGroup) => {
@@ -50,7 +50,9 @@ const isLoading = computed(() => supplies.value.size === 0);
 				>
 					{{ groupName }}
 				</HighlightedLabel>
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mx-auto">
+				<div
+					class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mx-auto"
+				>
 					<SupplyCard
 						v-for="supply in supplyGroup"
 						:key="supply.id"
@@ -67,7 +69,7 @@ const isLoading = computed(() => supplies.value.size === 0);
 								@click="markSupplyOutOfStock(supply.id)"
 							>
 								<IconPlus :size="16" class="mr-1" />
-								Needs restocking
+								Add to restock
 							</UButton>
 						</template>
 					</SupplyCard>

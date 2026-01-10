@@ -15,19 +15,19 @@ withDefaults(
 </script>
 
 <template>
-	<UCard :key="id">
+	<UCard :key="id" class="shadow-xl">
 		<template #header>
-			<span>{{ $props.name }}</span>
+			<span class="font-bold">{{ $props.name }}</span>
 		</template>
 
 		<img
 			v-if="image"
 			:src="image"
 			:alt="`Image of ${$props.name}`"
-			class="max-w-48"
+			class="max-w-40 max-h-40 w-full h-40 object-contain mx-auto"
 		/>
 		<template #footer>
-			<div class="flex align-center justify-between">
+			<div class="flex align-center justify-between gap-2">
 				<slot name="buttons" />
 				<UButton
 					v-if="hasFavorite"

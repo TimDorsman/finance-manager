@@ -76,7 +76,9 @@ onBeforeUnmount(() => {
 		</div>
 
 		<template v-else>
-			<div class="w-fit mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+			<div
+				class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mx-auto"
+			>
 				<SupplyCard
 					v-for="supply in supplies"
 					:key="supply.id"

@@ -1,7 +1,8 @@
-export default defineNuxtRouteMiddleware((to) => {
+// middleware/auth.global.ts
+export default defineNuxtRouteMiddleware(async (to) => {
 	const session = useSupabaseSession();
 
-	// Guest-only page
+	// If we're on the auth page and already have a session, go home
 	if (to.path === "/auth") {
 		if (session.value) {
 			return navigateTo("/");
@@ -9,7 +10,7 @@ export default defineNuxtRouteMiddleware((to) => {
 		return;
 	}
 
-	// Everything else is auth-only
+	// If no session exists and we're not on the auth page, go to auth
 	if (!session.value) {
 		return navigateTo("/auth");
 	}
