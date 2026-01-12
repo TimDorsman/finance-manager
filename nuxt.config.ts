@@ -24,7 +24,12 @@ export default defineNuxtConfig({
 		typeCheck: true,
 	},
 	imports: {
-		dirs: ["~/repositories", "~/services"],
+		dirs: [
+			"~/repositories",
+			"~/services",
+			"shared/types",
+			"shared/types/**",
+		],
 	},
 	components: [
 		{

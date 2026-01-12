@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useColorMode } from "@vueuse/core";
 import { colord } from "colord";
 
 const props = defineProps<{ color: string }>();

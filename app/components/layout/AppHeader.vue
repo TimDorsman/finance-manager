@@ -18,7 +18,7 @@ const items = computed<NavigationMenuItem[]>(() => {
 		{
 			label: "Budget planner",
 			icon: "i-lucide-pie-chart",
-			to: "/finance",
+			to: "/budget/overview",
 		},
 		{
 			label: "Shopping",
@@ -63,7 +63,12 @@ const handleLogout = async () => {
 		</template>
 
 		<ClientOnly>
-			<UNavigationMenu :items="items" />
+			<UNavigationMenu
+				:items="items"
+				:ui="{
+					list: 'gap-2',
+				}"
+			/>
 		</ClientOnly>
 
 		<template #right>
