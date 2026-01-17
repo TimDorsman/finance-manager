@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useOutOfStockSuppliesService } from "~/services/outOfStockSupplies.service";
-import type { SupplyListItem } from "~/types/supply";
 
 const { fetchOutOfStockSuppliesOrderedByGroup, markOutOfStockSupply } =
 	useOutOfStockSuppliesService();

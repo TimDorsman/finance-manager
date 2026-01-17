@@ -1,11 +1,22 @@
-export function useCategoryService() {
-	const { create } = useCategoryRepository();
+import type { PostgrestError } from "@supabase/supabase-js";
 
-	function createCategory(name: string, scope: string, householdId: string) {
-		create(name, scope, householdId);
+export function useCategoryService() {
+	const { insertCategory, selectCategories } = useCategoryRepository();
+
+	function addCategory(
+		name: string,
+		scope: Scope,
+		householdId: string
+	): Promise<PostgrestError | null> {
+		return insertCategory(name, scope, householdId);
+	}
+
+	function getCategories() {
+		return selectCategories();
 	}
 
 	return {
-		createCategory,
+		addCategory,
+		getCategories,
 	};
 }

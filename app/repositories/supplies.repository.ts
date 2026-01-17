@@ -1,5 +1,5 @@
-import type { Database } from "~/types/supabase";
-import type { SupplyListItem } from "~/types/supply";
+import type { Database } from "~~/shared/types/database";
+import type { SupplyListItem } from "~~/shared/types/supply";
 
 export const useSuppliesRepository = () => {
 	const supabase = useSupabaseClient<Database>();

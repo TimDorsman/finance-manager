@@ -5,6 +5,10 @@ const props = defineProps({
 	error: Object as () => NuxtError,
 });
 
+onMounted(() => {
+	console.error("Nuxt error:", props.error);
+});
+
 const title = computed(() => {
 	switch (props.error?.statusCode) {
 		case 404:

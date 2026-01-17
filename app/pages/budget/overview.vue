@@ -1,11 +1,24 @@
 <script setup lang="ts">
+import { HouseholdRole } from "~/enums/household-role";
+
 const { household } = useActiveHousehold();
-const { loadHousehold } = useHouseholdService();
 const isMounted = ref(false);
 
+watch(
+	household,
+	(newHousehold) => {
+		if (newHousehold) {
+			isMounted.value = true;
+		}
+	},
+	{ immediate: true }
+);
+
+const { getCategories } = useCategoryService();
+
 onMounted(async () => {
-	await loadHousehold();
-	isMounted.value = true;
+	const categories = await getCategories();
+	console.log({ categories });
 });
 </script>
 <template>
@@ -28,6 +41,7 @@ onMounted(async () => {
 				Your budget categories
 			</h3>
 			<UButton
+				v-if="household?.role === HouseholdRole.Admin"
 				variant="soft"
 				color="primary"
 				class="cursor-pointer"

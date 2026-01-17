@@ -1,8 +1,12 @@
 // middleware/auth.global.ts
 export default defineNuxtRouteMiddleware(async (to) => {
+	const supabase = useSupabaseClient();
 	const session = useSupabaseSession();
 
-	// If we're on the auth page and already have a session, go home
+	if (import.meta.client && session.value === null) {
+		await supabase.auth.getSession();
+	}
+
 	if (to.path === "/auth") {
 		if (session.value) {
 			return navigateTo("/");
@@ -10,7 +14,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		return;
 	}
 
-	// If no session exists and we're not on the auth page, go to auth
 	if (!session.value) {
 		return navigateTo("/auth");
 	}

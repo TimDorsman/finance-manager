@@ -1,4 +1,4 @@
-import type { SupplyListItem } from "~/types/supply";
+import type { SupplyListItem } from "~~/shared/types/supply";
 
 const CACHE_TTL = 60_000; // 1 minute
 

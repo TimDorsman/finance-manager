@@ -1,19 +1,34 @@
-import type { Database } from "~/types/supabase";
+import type { PostgrestError } from "@supabase/supabase-js";
+import type { Database } from "~~/shared/types/database";
 
 export function useCategoryRepository() {
 	const supabase = useSupabaseClient<Database>();
 
-	const create = async (
+	async function insertCategory(
 		name: string,
-		scope: string,
+		scope: Scope,
 		householdId: string
-	): Promise<void> => {
+	): Promise<PostgrestError | null> {
 		const { error } = await supabase
 			.from("categories")
 			.insert([{ name, scope, household_id: householdId }]);
-	};
+
+		return error;
+	}
+
+	async function selectCategories() {
+		const { data, error } = await supabase
+			.from("categories")
+			.select(
+				"id, name, scope, owner_user_id, household_id, is_archived, created_at"
+			);
+
+		if (error) throw error;
+		return data ?? [];
+	}
 
 	return {
-		create,
+		insertCategory,
+		selectCategories,
 	};
 }

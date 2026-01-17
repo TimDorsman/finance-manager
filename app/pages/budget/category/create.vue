@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from "@nuxt/ui";
 import * as z from "zod";
-import { CategoryScope } from "~/enums/CategoryScope";
+import { CategoryScope } from "~/enums/category-scope";
 
 const { household } = useActiveHousehold();
-const { loadHousehold } = useHouseholdService();
-const { createCategory } = useCategoryService();
+const { addCategory } = useCategoryService();
 
-onMounted(async () => {
-	await loadHousehold();
+watch(
+	household,
+	(newHousehold) => {
+		console.log("Household changed:", newHousehold);
+	},
+	{ immediate: false }
+);
+
+const message = ref<{ text: string | null; type: "error" | "success" | null }>({
+	type: null,
+	text: null,
 });
-
-const error = ref<string | null>(null);
 
 const items = ref<CategoryScope[]>([
 	CategoryScope.Household,
@@ -37,21 +43,40 @@ type Schema = z.output<typeof schema>;
 
 async function onSubmit(payload: FormSubmitEvent<Schema>) {
 	const { name, scope } = payload.data;
+	message.value = { text: null, type: null };
 
 	if (!household.value) {
-		error.value = "No active household found.";
+		message.value = { text: "No active household found.", type: "error" };
 		return;
 	}
 
-	createCategory(name, scope, household.value.id);
-	error.value = null;
+	const error = await addCategory(name, scope, household.value.id);
+
+	if (error === null) {
+		message.value = {
+			text: "Category created successfully.",
+			type: "success",
+		};
+		state.name = "";
+		state.scope = CategoryScope.Household;
+		return;
+	}
+
+	if (error) {
+		message.value = { text: error.message, type: "error" };
+		return;
+	}
 }
+
+const messageTitle = computed(() =>
+	message.value.type === "success" ? "Success" : "Something went wrong"
+);
 </script>
 
 <template>
 	<UPage>
 		<h2
-			class="text-2xl md:text-4xl font-semibold tracking-tight text-primary mb-16"
+			class="text-2xl lg:text-4xl font-semibold tracking-tight text-primary mb-16"
 		>
 			Create a new category
 		</h2>
@@ -59,14 +84,11 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 		<UForm
 			:schema="schema"
 			:state="state"
-			class="space-y-4"
+			class="space-y-4 w-full lg:w-1/3 mb-4"
 			@submit="onSubmit"
 		>
 			<UFormField label="Name" name="name" size="lg">
-				<UInput
-					v-model="state.name"
-					:ui="{ root: 'w-full md:w-1/3' }"
-				/>
+				<UInput v-model="state.name" :ui="{ root: 'w-full' }" />
 			</UFormField>
 
 			<UFormField label="Scope" name="scope" size="lg">
@@ -74,7 +96,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 					v-model="state.scope"
 					:items="items"
 					:ui="{
-						base: 'w-full md:w-1/3',
+						base: 'w-full',
 					}"
 				/>
 			</UFormField>
@@ -88,5 +110,14 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 				Submit
 			</UButton>
 		</UForm>
+		<UAlert
+			v-if="message.type && message.text"
+			:title="messageTitle"
+			:description="message.text"
+			:color="message.type"
+			variant="subtle"
+			class="w-full md:w-fit"
+			icon="i-lucide-check-circle"
+		/>
 	</UPage>
 </template>
