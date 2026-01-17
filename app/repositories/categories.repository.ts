@@ -16,7 +16,17 @@ export function useCategoryRepository() {
 		return error;
 	}
 
-	async function selectCategories() {
+	async function selectCategories(): Promise<
+		{
+			id: string;
+			name: string;
+			scope: string;
+			owner_user_id: string | null;
+			household_id: string;
+			is_archived: boolean | null;
+			created_at: string | null;
+		}[]
+	> {
 		const { data, error } = await supabase
 			.from("categories")
 			.select(

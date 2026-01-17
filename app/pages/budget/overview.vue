@@ -3,6 +3,11 @@ import { HouseholdRole } from "~/enums/household-role";
 
 const { household } = useActiveHousehold();
 const isMounted = ref(false);
+const categories = ref<
+	(Category & {
+		transactions: Transaction[];
+	})[]
+>([]);
 
 watch(
 	household,
@@ -15,10 +20,25 @@ watch(
 );
 
 const { getCategories } = useCategoryService();
+const { getTransactionsByCategory } = useTransactionService();
 
 onMounted(async () => {
-	const categories = await getCategories();
-	console.log({ categories });
+	const categoryResult = await getCategories();
+
+	const transactionsPerCategory = await Promise.all(
+		categoryResult.map(async (category) => {
+			return await getTransactionsByCategory(category.id);
+		})
+	);
+
+	const categoriesWithTransactions = categoryResult.map((category, index) => {
+		return {
+			...category,
+			transactions: transactionsPerCategory[index] ?? [],
+		};
+	});
+
+	categories.value = categoriesWithTransactions;
 });
 </script>
 <template>
@@ -52,28 +72,12 @@ onMounted(async () => {
 			</UButton>
 		</div>
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6">
-			<div
-				v-for="category in [
-					'Groceries',
-					'Utilities',
-					'Transport',
-					'Entertainment',
-				]"
-				:key="category"
-				class="mt-6 p-4 bg-default/70 backdrop-blur border border-default rounded-lg shadow-sm"
-			>
-				<p class="text-lg font-medium text-primary">{{ category }}</p>
-				<p class="mt-2 text-gray-600 dark:text-gray-300">
-					Budgeted: $500
-				</p>
-				<p class="text-gray-600 dark:text-gray-300">Spent: $350</p>
-				<BarChart v-if="isMounted" />
-				<IconLoader
-					class="mx-auto mb-4 animate-spin duration-4000"
-					:size="48"
-					v-else
-				/>
-			</div>
+			<BudgetCard
+				v-for="category in categories"
+				:id="category.id"
+				:name="category.name"
+				:transactions="category.transactions"
+			/>
 		</div>
 	</div>
 </template>

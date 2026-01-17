@@ -12,6 +12,10 @@ import {
 } from "chart.js";
 import { Bar } from "vue-chartjs";
 
+const props = defineProps<{
+	data: number[];
+}>();
+
 // Register Chart.js components
 ChartJS.register(
 	Title,
@@ -50,7 +54,7 @@ const chartData = ref({
 		},
 		{
 			label: "Spent",
-			data: [180, 50, 210, 170, 160, 200, 200, 195, 185, 205, 190, 200],
+			data: props.data ?? [],
 			backgroundColor: spendColor.value,
 			borderRadius: 6,
 			grouped: false,
