@@ -5,53 +5,14 @@ const props = defineProps<{
 	transactions: Transaction[];
 }>();
 
-const getSpendAmountPerMonth = (transactions: Transaction[]) => {
-	transactions = [...transactions];
-
-	const totalPerMonth: number[] = Array(12).fill(0);
-
-	transactions
-		.sort((a, b) => {
-			const aTime = a.date.getTime();
-			const bTime = b.date.getTime();
-
-			if (aTime < bTime) {
-				return 1;
-			}
-
-			if (aTime > bTime) {
-				return -1;
-			}
-
-			return 0;
-		})
-		.forEach((transaction) => {
-			const monthIndex = transaction.date.getMonth();
-
-			if (Number.isNaN(totalPerMonth[monthIndex])) {
-				return;
-			}
-
-			let total: number = totalPerMonth[monthIndex] ?? 0;
-			total += transaction.amount;
-
-			totalPerMonth[monthIndex] = total;
-		});
-
-	return totalPerMonth;
-};
-
-const getTotalSpendCurentMonth = computed(
-	() =>
-		props.transactions
-			.filter(
-				(transaction) =>
-					transaction.date.getMonth() === new Date().getMonth() &&
-					transaction.date.getFullYear() === new Date().getFullYear()
-			)
-			.reduce((prev, curr) => (prev += curr.amount), 0)
-
-	// props.transactions.reduce((prev, curr) => (prev += curr.amount), 0)
+const getTotalSpendCurentMonth = computed(() =>
+	props.transactions
+		.filter(
+			(transaction) =>
+				transaction.date.getMonth() === new Date().getMonth() &&
+				transaction.date.getFullYear() === new Date().getFullYear(),
+		)
+		.reduce((prev, curr) => (prev += curr.amount), 0),
 );
 </script>
 
@@ -60,9 +21,21 @@ const getTotalSpendCurentMonth = computed(
 		:key="id"
 		class="mt-6 p-4 bg-default/70 backdrop-blur border border-default rounded-lg shadow-sm"
 	>
-		<p class="text-lg font-medium text-primary">
-			{{ name }}
-		</p>
+		<div class="flex flex-row justify-between gap-2 align-start">
+			<h4 class="text-lg font-medium text-primary">
+				{{ name }}
+			</h4>
+			<UButton
+				size="sm"
+				variant="soft"
+				color="primary"
+				class="cursor-pointer self-start"
+				icon="i-lucide-eye"
+				@click="navigateTo(`/budget/category/${id}`)"
+			>
+				<span class="hidden sm:inline">View details</span>
+			</UButton>
+		</div>
 		<p class="font-medium mt-2">This month:</p>
 		<ul class="list-disc pl-5">
 			<li>Budget: €200</li>

@@ -23,7 +23,7 @@ ChartJS.register(
 	Legend,
 	BarElement,
 	CategoryScale,
-	LinearScale
+	LinearScale,
 );
 
 const budgetColor = useCssVar("--ui-primary");
@@ -86,7 +86,7 @@ const chartOptions = ref({
 	plugins: {
 		tooltip: {
 			callbacks: {
-				label: (ctx: any) => `${ctx.dataset.label}: $${ctx.raw}`,
+				label: (ctx: any) => `${ctx.dataset.label}: €${ctx.raw}`,
 			},
 		},
 	},

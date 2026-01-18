@@ -16,7 +16,7 @@ watch(
 			isMounted.value = true;
 		}
 	},
-	{ immediate: true }
+	{ immediate: true },
 );
 
 const { getCategories } = useCategoryService();
@@ -28,7 +28,7 @@ onMounted(async () => {
 	const transactionsPerCategory = await Promise.all(
 		categoryResult.map(async (category) => {
 			return await getTransactionsByCategory(category.id);
-		})
+		}),
 	);
 
 	const categoriesWithTransactions = categoryResult.map((category, index) => {
