@@ -8,7 +8,25 @@ type TransactionQueryOptions = {
 export function useTransactionRepository() {
 	const supabase = useSupabaseClient<Database>();
 
-	async function insertTransaction() {}
+	async function insertTransaction(transaction: {
+		amount: number;
+		date: string;
+		description: string;
+		categoryId: string;
+		householdId: string;
+		userId: string;
+	}) {
+		supabase.from("transactions").insert([
+			{
+				amount: transaction.amount,
+				transaction_date: transaction.date,
+				category_id: transaction.categoryId,
+				household_id: transaction.householdId,
+				user_id: transaction.userId,
+				description: transaction.description,
+			},
+		]);
+	}
 
 	async function selectTransactions(options?: TransactionQueryOptions) {
 		let query = supabase.from("transactions").select("*");

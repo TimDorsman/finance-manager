@@ -1,44 +1,46 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 
 export function useCategoryService() {
-	const { insertCategory, selectCategories } = useCategoryRepository();
+	const { insertCategory, selectCategories, selectCategoryById } =
+		useCategoryRepository();
+
+	async function getCategoryById(id: string): Promise<Category> {
+		const category = await selectCategoryById(id);
+		return {
+			...category,
+			createdAt: new Date(category.createdAt),
+		};
+	}
+
+	async function getCategories(): Promise<CategoryView[]> {
+		const categories = await selectCategories();
+
+		return categories.map(
+			(category): CategoryView => ({
+				...category,
+				createdAt: new Date(category.createdAt),
+				isPersonal: category.scope === "personal",
+			}),
+		);
+	}
 
 	function addCategory(
 		name: string,
 		scope: Scope,
-		householdId: string
+		householdId: string,
 	): Promise<PostgrestError | null> {
 		return insertCategory(name, scope, householdId);
 	}
 
-	async function getCategories(): Promise<
-		{
-			id: string;
-			name: string;
-			scope: string;
-			ownerUserId: string | null;
-			isArchived: boolean;
-			householdId: string;
-			createdAt: Date;
-			isPersonal: boolean;
-		}[]
-	> {
-		const categories = await selectCategories();
-
-		return categories.map((category) => ({
-			id: category.id,
-			name: category.name,
-			scope: category.scope,
-			ownerUserId: category.owner_user_id,
-			isArchived: category.is_archived ?? false,
-			householdId: category.household_id,
-			createdAt: new Date(category.created_at!),
-			isPersonal: category.scope === "personal",
-		}));
+	async function deleteCategory(id: string): Promise<PostgrestError | null> {
+		const { deleteCategoryById } = useCategoryRepository();
+		return await deleteCategoryById(id);
 	}
 
 	return {
 		addCategory,
 		getCategories,
+		getCategoryById,
+		deleteCategory,
 	};
 }

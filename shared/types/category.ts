@@ -10,5 +10,8 @@ export type Category = {
 	isArchived: boolean;
 	householdId: string;
 	createdAt: Date;
+};
+
+export type CategoryView = Category & {
 	isPersonal: boolean;
 };

@@ -1,11 +1,16 @@
-import { tr } from "zod/locales";
-
 export function useTransactionService() {
 	const { insertTransaction, selectTransactions } =
 		useTransactionRepository();
 
-	function addTransaction() {
-		// @TODO implement it
+	async function addTransaction(transaction: {
+		amount: number;
+		date: string;
+		description: string;
+		categoryId: string;
+		householdId: string;
+		userId: string;
+	}) {
+		return await insertTransaction(transaction);
 	}
 
 	async function getTransactions() {
