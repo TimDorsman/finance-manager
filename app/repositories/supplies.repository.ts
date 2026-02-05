@@ -17,7 +17,7 @@ export const useSuppliesRepository = () => {
 					name,
 					color
 				)
-			`
+			`,
 			)
 			.order("name", {
 				foreignTable: "supply_groups",
@@ -35,14 +35,16 @@ export const useSuppliesRepository = () => {
 		}));
 	};
 
-	const markOutOfStock = async (supplyId: string): Promise<void> => {
-		const { error } = await supabase
+	const markOutOfStock = async (supplyId: string) => {
+		const { data, error } = await supabase
 			.from("out_of_stock_supplies")
 			.insert({ supply_id: supplyId });
 
 		if (error) {
 			throw error;
 		}
+
+		return data;
 	};
 
 	return {

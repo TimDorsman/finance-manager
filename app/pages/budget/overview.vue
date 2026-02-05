@@ -23,25 +23,27 @@ const { getCategories } = useCategoryService();
 const { getTransactionsByCategory } = useTransactionService();
 
 onMounted(async () => {
-	const categoryResult = await getCategories();
+	const { data: categoryData } = await getCategories();
+
+	const categoryList = categoryData.value ?? [];
 
 	const transactionsPerCategory = await Promise.all(
-		categoryResult.map(async (category) => {
-			return await getTransactionsByCategory(category.id);
+		categoryList.map(async (category) => {
+			const { data } = await getTransactionsByCategory(category.id);
+			return data.value ?? [];
 		}),
 	);
 
-	const categoriesWithTransactions = categoryResult.map((category, index) => {
-		return {
-			...category,
-			transactions: transactionsPerCategory[index] ?? [],
-		};
-	});
+	const categoriesWithTransactions = categoryList.map((category, index) => ({
+		...category,
+		transactions: transactionsPerCategory[index] ?? [],
+	}));
 
 	categories.value = categoriesWithTransactions;
 });
 </script>
 <template>
+	<NuxtTime :datetime="Date.now()" />
 	<h2
 		class="text-2xl md:text-4xl font-semibold tracking-tight text-primary mb-16"
 	>

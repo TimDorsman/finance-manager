@@ -16,7 +16,7 @@ export function useTransactionRepository() {
 		householdId: string;
 		userId: string;
 	}) {
-		supabase.from("transactions").insert([
+		const { data, error } = await supabase.from("transactions").insert([
 			{
 				amount: transaction.amount,
 				transaction_date: transaction.date,
@@ -26,6 +26,12 @@ export function useTransactionRepository() {
 				description: transaction.description,
 			},
 		]);
+
+		if (error) {
+			throw error;
+		}
+
+		return data;
 	}
 
 	async function selectTransactions(options?: TransactionQueryOptions) {

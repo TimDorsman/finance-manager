@@ -34,6 +34,8 @@ export default defineNuxtConfig({
 			"~/services",
 			"shared/types",
 			"shared/types/**",
+			"~/composables",
+			"~/composables/**",
 		],
 	},
 	components: [

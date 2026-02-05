@@ -1,26 +1,69 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 
+const CACHE_TTL = 60_000; // 1 minute
+
+const supplyCacheKeys = {
+	getCategories: () => "categories:all",
+	getCategoryById: (id: string) => `categories:by-id:${id}`,
+};
+
 export function useCategoryService() {
 	const { insertCategory, selectCategories, selectCategoryById } =
 		useCategoryRepository();
 
-	async function getCategoryById(id: string): Promise<Category> {
-		const category = await selectCategoryById(id);
-		return {
-			...category,
-			createdAt: new Date(category.createdAt),
-		};
+	function getCategoryById(id: string) {
+		const cacheKey = supplyCacheKeys.getCategoryById(id);
+		const fetchedAt = useFetchedAt(cacheKey);
+
+		return useAsyncData<Category | null>(
+			cacheKey,
+			async () => {
+				const data = await selectCategoryById(id);
+				if (!data) return null;
+
+				fetchedAt.value = Date.now();
+
+				return {
+					...data,
+					createdAt: new Date(data.createdAt),
+				};
+			},
+			{
+				default: () => null,
+				getCachedData(key, nuxtApp) {
+					if (!fetchedAt.value) return;
+					if (Date.now() - fetchedAt.value > CACHE_TTL) return;
+					return nuxtApp.payload.data[key];
+				},
+			},
+		);
 	}
 
-	async function getCategories(): Promise<CategoryView[]> {
-		const categories = await selectCategories();
+	function getCategories() {
+		const cacheKey = supplyCacheKeys.getCategories();
+		const fetchedAt = useFetchedAt(cacheKey);
 
-		return categories.map(
-			(category): CategoryView => ({
-				...category,
-				createdAt: new Date(category.createdAt),
-				isPersonal: category.scope === "personal",
-			}),
+		return useAsyncData<CategoryView[]>(
+			cacheKey,
+			async () => {
+				const categories = await selectCategories();
+
+				fetchedAt.value = Date.now();
+
+				return categories.map((category) => ({
+					...category,
+					createdAt: new Date(category.createdAt),
+					isPersonal: category.scope === "personal",
+				}));
+			},
+			{
+				default: () => [],
+				getCachedData(key, nuxtApp) {
+					if (!fetchedAt.value) return;
+					if (Date.now() - fetchedAt.value > CACHE_TTL) return;
+					return nuxtApp.payload.data[key];
+				},
+			},
 		);
 	}
 

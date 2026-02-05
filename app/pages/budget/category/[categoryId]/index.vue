@@ -7,9 +7,7 @@ type TransactionView = Omit<
 	amount: string;
 };
 
-const categoryInformation = ref<Category | null>(null);
-const transactions = ref<Transaction[]>([]);
-const error = ref<string | null>(null);
+const errorMessage = ref<string | null>(null);
 const isDeleteModalOpen = ref(false);
 
 const route = useRoute();
@@ -17,6 +15,10 @@ const categoryId = route.params.categoryId as string;
 
 const { getTransactionsByCategory } = useTransactionService();
 const { deleteCategory, getCategoryById } = useCategoryService();
+
+const { data: category } = getCategoryById(categoryId);
+const { data: transactions, error } =
+	await getTransactionsByCategory(categoryId);
 
 const transactionsView = computed<TransactionView[]>(() =>
 	transactions.value.map((transaction) => ({
@@ -31,24 +33,16 @@ const deleteCurrentCategory = async () => {
 	return;
 	// const deleteError = await deleteCategory(categoryId);
 	// if (deleteError) {
-	// 	error.value = `Failed to delete category: ${deleteError.message}`;
+	// 	errorMessage.value = `Failed to delete category: ${deleteError.message}`;
 	// 	return;
 	// }
 	// await navigateTo("/budget/overview");
 };
 
-onMounted(async () => {
-	try {
-		categoryInformation.value = await getCategoryById(categoryId);
-	} catch (e) {
-		alert("Failed to load category information.");
-		return;
-	}
-
-	try {
-		transactions.value = await getTransactionsByCategory(categoryId);
-	} catch (e) {
-		error.value = "Failed to display bar chart.";
+watch(error, (newError) => {
+	if (newError) {
+		errorMessage.value = "Failed to load transactions.";
+		transactions.value = [];
 	}
 });
 </script>
@@ -59,7 +53,7 @@ onMounted(async () => {
 			variant="subtle"
 			color="primary"
 			class="cursor-pointer mb-4"
-			icon="i-lucide-edit-2"
+			icon="i-lucide-plus"
 			@click="
 				navigateTo(`/budget/category/${categoryId}/transaction/add`)
 			"
@@ -76,6 +70,12 @@ onMounted(async () => {
 			Delete
 		</UButton>
 	</div>
+	<h2
+		class="text-2xl lg:text-4xl font-semibold tracking-tight text-white mb-16"
+	>
+		{{ category?.name }}
+	</h2>
+
 	<BudgetBarChart
 		v-if="transactions.length > 0"
 		:data="getSpendAmountPerMonth(transactions)"
@@ -83,19 +83,21 @@ onMounted(async () => {
 	/>
 
 	<UAlert
-		v-if="error"
+		v-if="errorMessage"
 		color="error"
 		variant="subtle"
 		class="w-fit m-auto mb-4"
 		icon="i-lucide-circle-alert"
-		:description="error"
+		:description="errorMessage"
 	/>
 
 	<UTable :data="transactionsView" class="flex-1" />
-	<PromptModal
-		v-model:open="isDeleteModalOpen"
-		message="Are you sure you want to delete this category?"
-		confirm-label="Delete"
-		@confirm="deleteCurrentCategory"
-	/>
+	<Teleport to="body">
+		<PromptModal
+			v-model:open="isDeleteModalOpen"
+			message="Are you sure you want to delete this category?"
+			confirm-label="Delete"
+			@confirm="deleteCurrentCategory"
+		/>
+	</Teleport>
 </template>

@@ -2,8 +2,6 @@
 const { loadHousehold } = useHouseholdService();
 
 await loadHousehold();
-
-const route = useRoute();
 </script>
 
 <template>
