@@ -6,14 +6,6 @@ import { CategoryScope } from "~/enums/category-scope";
 const { household } = useActiveHousehold();
 const { addCategory } = useCategoryService();
 
-watch(
-	household,
-	(newHousehold) => {
-		console.log("Household changed:", newHousehold);
-	},
-	{ immediate: false }
-);
-
 const message = ref<{ text: string | null; type: "error" | "success" | null }>({
 	type: null,
 	text: null,
@@ -69,7 +61,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 }
 
 const messageTitle = computed(() =>
-	message.value.type === "success" ? "Success" : "Something went wrong"
+	message.value.type === "success" ? "Success" : "Something went wrong",
 );
 </script>
 

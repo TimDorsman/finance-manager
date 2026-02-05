@@ -5,8 +5,6 @@ import * as z from "zod";
 const route = useRoute();
 const user = useSupabaseUser();
 
-console.log(user);
-
 const { household } = useActiveHousehold();
 const { addTransaction } = useTransactionService();
 const { getCategoryById } = useCategoryService();
