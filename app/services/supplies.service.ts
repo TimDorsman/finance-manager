@@ -1,6 +1,6 @@
 import type { SupplyListItem } from "~~/shared/types/supply";
 
-const CACHE_TTL = 60_000; // 1 minute
+const CACHE_TTL = 10_000; // 10 seconds
 
 const supplyCacheKeys = {
 	orderedByGroup: () => "supplies:ordered-by-group",
@@ -11,13 +11,13 @@ export function useSupplyService() {
 
 	function fetchSuppliesOrderedByGroup() {
 		const cacheKey = supplyCacheKeys.orderedByGroup();
-		const fetchedAt = useFetchedAt(cacheKey);
+		const { fetchedAt, update } = useCache(cacheKey, CACHE_TTL);
 
 		return useAsyncData<SupplyListItem[]>(
 			cacheKey,
 			async () => {
 				const data = await findAllOrderedByGroup();
-				fetchedAt.value = Date.now();
+				update();
 				return data;
 			},
 			{
@@ -39,7 +39,8 @@ export function useSupplyService() {
 
 		if (result) {
 			const cacheKey = supplyCacheKeys.orderedByGroup();
-			useFetchedAt(cacheKey).value = null;
+			const { invalidate } = useCache(cacheKey, CACHE_TTL);
+			invalidate();
 			await refreshNuxtData(cacheKey);
 		}
 

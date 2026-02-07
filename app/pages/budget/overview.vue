@@ -2,58 +2,55 @@
 import { HouseholdRole } from "~/enums/household-role";
 
 const { household } = useActiveHousehold();
-const isMounted = ref(false);
-const categories = ref<
-	(Category & {
-		transactions: Transaction[];
-	})[]
->([]);
 
-watch(
-	household,
-	(newHousehold) => {
-		if (newHousehold) {
-			isMounted.value = true;
-		}
+const categoryService = useCategoryService();
+const transactionService = useTransactionService();
+
+const {
+	data: categories,
+	pending,
+	error,
+	refresh,
+} = await useAsyncData(
+	"categoriesWithTransactions",
+	async () => {
+		if (!household.value) return [];
+
+		const [categoryResult, transactions] = await Promise.all([
+			categoryService.getCategories(),
+			transactionService.getTransactions(),
+		]);
+
+		const categoryList = categoryResult.data.value ?? [];
+
+		return categoryList.map((category) => ({
+			...category,
+			transactions: transactions.filter(
+				(transaction) => transaction.categoryId === category.id,
+			),
+		}));
 	},
-	{ immediate: true },
+	{
+		default: () => [],
+		watch: [household],
+	},
 );
-
-const { getCategories } = useCategoryService();
-const { getTransactionsByCategory } = useTransactionService();
-
-onMounted(async () => {
-	const { data: categoryData } = await getCategories();
-
-	const categoryList = categoryData.value ?? [];
-
-	const transactionsPerCategory = await Promise.all(
-		categoryList.map(async (category) => {
-			const { data } = await getTransactionsByCategory(category.id);
-			return data.value ?? [];
-		}),
-	);
-
-	const categoriesWithTransactions = categoryList.map((category, index) => ({
-		...category,
-		transactions: transactionsPerCategory[index] ?? [],
-	}));
-
-	categories.value = categoriesWithTransactions;
-});
 </script>
+
 <template>
-	<NuxtTime :datetime="Date.now()" />
 	<h2
 		class="text-2xl md:text-4xl font-semibold tracking-tight text-primary mb-16"
 	>
 		Household
-		<span class="font-bold text-secondary dark:text-white">{{
-			household?.name
-		}}</span>
+		<span class="font-bold text-secondary dark:text-white">
+			{{ household?.name }}
+		</span>
 	</h2>
 
-	<div>
+	<div v-if="pending">Loading</div>
+	<div v-else-if="error">Failed to load</div>
+
+	<div v-else>
 		<div
 			class="flex flex-col md:flex-row items-start md:items-center justify-between gap-y-4 md:gap-0"
 		>
@@ -62,20 +59,22 @@ onMounted(async () => {
 			>
 				Your budget categories
 			</h3>
+
 			<UButton
 				v-if="household?.role === HouseholdRole.Admin"
 				variant="soft"
 				color="primary"
-				class="cursor-pointer"
 				icon="i-lucide-circle-plus"
 				@click="navigateTo('/budget/category/create')"
 			>
 				Create new category
 			</UButton>
 		</div>
-		<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6">
+
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 mt-6">
 			<BudgetCard
 				v-for="category in categories"
+				:key="category.id"
 				:id="category.id"
 				:name="category.name"
 				:transactions="category.transactions"

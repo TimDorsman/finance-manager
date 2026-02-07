@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useSupplyService } from "~/services/supplies.services";
+import { useSupplyService } from "~/services/supplies.service";
 
 const { fetchSuppliesOrderedByGroup, markSupplyOutOfStock } =
 	useSupplyService();

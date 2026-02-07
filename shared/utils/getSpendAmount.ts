@@ -7,8 +7,8 @@ export function getSpendAmountPerMonth(transactions: Transaction[]): number[] {
 
 	transactions
 		.sort((a, b) => {
-			const aTime = a.date.getTime();
-			const bTime = b.date.getTime();
+			const aTime = new Date(a.date).getTime();
+			const bTime = new Date(b.date).getTime();
 
 			if (aTime < bTime) {
 				return 1;
@@ -21,7 +21,7 @@ export function getSpendAmountPerMonth(transactions: Transaction[]): number[] {
 			return 0;
 		})
 		.forEach((transaction) => {
-			const monthIndex = transaction.date.getMonth();
+			const monthIndex = new Date(transaction.date).getMonth();
 
 			if (Number.isNaN(totalPerMonth[monthIndex])) {
 				return;

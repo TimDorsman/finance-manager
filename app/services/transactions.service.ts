@@ -1,4 +1,4 @@
-const CACHE_TTL = 60_000; // 1 minute
+const CACHE_TTL = 10_000; // 10 seconds
 
 const supplyCacheKey = {
 	getTransactions: () => "transactions:all",
@@ -20,9 +20,26 @@ export function useTransactionService() {
 	}) {
 		const result = await insertTransaction(transaction);
 		if (result) {
-			const cacheKey = supplyCacheKey.getTransactions();
-			useFetchedAt(cacheKey).value = null;
-			await refreshNuxtData(cacheKey);
+			const { fetchedAt } = useCache(
+				supplyCacheKey.getTransactions(),
+				CACHE_TTL,
+			);
+			fetchedAt.value = null;
+
+			const { fetchedAt: fetchedAtByCategory } = useCache(
+				supplyCacheKey.getTransactionsByCategory(
+					transaction.categoryId,
+				),
+				CACHE_TTL,
+			);
+			fetchedAtByCategory.value = null;
+
+			await refreshNuxtData([
+				supplyCacheKey.getTransactions(),
+				supplyCacheKey.getTransactionsByCategory(
+					transaction.categoryId,
+				),
+			]);
 		}
 
 		return result;
@@ -30,7 +47,8 @@ export function useTransactionService() {
 
 	async function getTransactions() {
 		const cacheKey = supplyCacheKey.getTransactions();
-		const fetchedAt = useFetchedAt(cacheKey);
+		const { fetchedAt } = useCache(cacheKey, CACHE_TTL);
+
 		fetchedAt.value = Date.now();
 
 		const transactions = await selectTransactions();
@@ -39,22 +57,15 @@ export function useTransactionService() {
 
 	function getTransactionsByCategory(categoryId: string) {
 		const cacheKey = supplyCacheKey.getTransactionsByCategory(categoryId);
-		const fetchedAt = useFetchedAt(cacheKey);
+		const { fetchedAt } = useCache(cacheKey, CACHE_TTL);
 
 		return useAsyncData(
-			`${cacheKey}:${categoryId}`,
+			cacheKey,
 			async () => {
 				const transactions = await selectTransactions({ categoryId });
 				fetchedAt.value = Date.now();
 
-				return transactions.map((transaction) => ({
-					id: transaction.id,
-					amount: transaction.amount,
-					categoryId: transaction.category_id,
-					createdBy: transaction.user_id,
-					date: new Date(transaction.transaction_date),
-					description: transaction.description,
-				}));
+				return transactions;
 			},
 			{
 				default: () => [],

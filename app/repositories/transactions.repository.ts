@@ -33,9 +33,25 @@ export function useTransactionRepository() {
 
 		return data;
 	}
+	/*
+	{
+		amount: number;
+		category_id: string;
+		created_at: string | null;
+		description: string | null;
+		household_id: string;
+		id: string;
+		transaction_date: string;
+		user_id: string;
+	}
+	*/
 
 	async function selectTransactions(options?: TransactionQueryOptions) {
-		let query = supabase.from("transactions").select("*");
+		let query = supabase
+			.from("transactions")
+			.select(
+				"id, amount, description, categoryId:category_id, createdBy:user_id,  date:transaction_date",
+			);
 
 		if (options?.categoryId) {
 			query.eq("category_id", options.categoryId);

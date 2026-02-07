@@ -9,8 +9,10 @@ const getTotalSpendCurentMonth = computed(() =>
 	props.transactions
 		.filter(
 			(transaction) =>
-				transaction.date.getMonth() === new Date().getMonth() &&
-				transaction.date.getFullYear() === new Date().getFullYear(),
+				new Date(transaction.date).getMonth() ===
+					new Date().getMonth() &&
+				new Date(transaction.date).getFullYear() ===
+					new Date().getFullYear(),
 		)
 		.reduce((prev, curr) => (prev += curr.amount), 0),
 );

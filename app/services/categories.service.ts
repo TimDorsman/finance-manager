@@ -13,7 +13,7 @@ export function useCategoryService() {
 
 	function getCategoryById(id: string) {
 		const cacheKey = supplyCacheKeys.getCategoryById(id);
-		const fetchedAt = useFetchedAt(cacheKey);
+		const { fetchedAt } = useCache(cacheKey, CACHE_TTL);
 
 		return useAsyncData<Category | null>(
 			cacheKey,
@@ -41,7 +41,7 @@ export function useCategoryService() {
 
 	function getCategories() {
 		const cacheKey = supplyCacheKeys.getCategories();
-		const fetchedAt = useFetchedAt(cacheKey);
+		const { fetchedAt } = useCache(cacheKey, CACHE_TTL);
 
 		return useAsyncData<CategoryView[]>(
 			cacheKey,
