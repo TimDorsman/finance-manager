@@ -1,23 +1,42 @@
 <script setup lang="ts">
+import { getPaginationRowModel } from "@tanstack/vue-table";
+
 type TransactionView = Omit<
 	Transaction,
-	"id" | "categoryId" | "date" | "householdId" | "amount"
+	"categoryId" | "date" | "householdId" | "amount"
 > & {
 	date: string;
 	amount: string;
 };
 
+type PendingDelete =
+	| {
+			type: "category";
+	  }
+	| {
+			type: "transaction";
+			transactionId: string;
+			description: string | null;
+	  };
+
 const UButton = resolveComponent("UButton");
-const UBadge = resolveComponent("UBadge");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
 
 const errorMessage = ref<string | null>(null);
 const isDeleteModalOpen = ref(false);
+const pendingDelete = ref<PendingDelete | null>(null);
+const pagination = ref({
+	pageIndex: 0,
+	pageSize: 10,
+});
 
 const route = useRoute();
 const categoryId = route.params.categoryId as string;
 
-const { getTransactionsByCategory } = useTransactionService();
+const table = useTemplateRef("table");
+
+const { getTransactionsByCategory, deleteTransaction } =
+	useTransactionService();
 const { deleteCategory, getCategoryById } = useCategoryService();
 
 const { data: category } = getCategoryById(categoryId);
@@ -26,22 +45,88 @@ const { data: transactions, error } =
 
 const transactionsView = computed<TransactionView[]>(() =>
 	transactions.value.map((transaction) => ({
-		date: new Date(transaction.date).toLocaleDateString(),
+		id: transaction.id,
 		amount: transaction.amount.toFixed(2),
 		description: transaction.description,
+		date: new Date(transaction.date).toLocaleDateString(),
 		createdBy: transaction.createdBy,
 	})),
 );
 
+const deleteMessage = computed(() => {
+	if (!pendingDelete.value) {
+		return "";
+	}
+
+	if (pendingDelete.value.type === "category") {
+		return "Are you sure you want to delete this category?";
+	}
+
+	return `Are you sure you want to delete transaction "${pendingDelete.value.description ?? "(no description)"}"?`;
+});
+
+const deleteConfirmLabel = computed(() => {
+	if (!pendingDelete.value) {
+		return "Delete";
+	}
+
+	return pendingDelete.value.type === "category"
+		? "Delete category"
+		: "Delete transaction";
+});
+
 const deleteCurrentCategory = async () => {
-	return;
-	// const deleteError = await deleteCategory(categoryId);
-	// if (deleteError) {
-	// 	errorMessage.value = `Failed to delete category: ${deleteError.message}`;
-	// 	return;
-	// }
-	// await navigateTo("/budget/overview");
+	const deleteError = await deleteCategory(categoryId);
+	if (deleteError) {
+		errorMessage.value = `Failed to delete category: ${deleteError.message}`;
+		return;
+	}
+	await navigateTo("/budget/overview");
 };
+
+const deleteCurrentTransaction = async (id: string) => {
+	const result = await deleteTransaction(id);
+	if (result) {
+		errorMessage.value = "Failed to delete transaction";
+		return;
+	}
+};
+
+const onConfirmDelete = async () => {
+	if (!pendingDelete.value) {
+		isDeleteModalOpen.value = false;
+		return;
+	}
+
+	if (pendingDelete.value.type === "category") {
+		await deleteCurrentCategory();
+	} else {
+		await deleteCurrentTransaction(pendingDelete.value.transactionId);
+	}
+
+	pendingDelete.value = null;
+	isDeleteModalOpen.value = false;
+};
+
+const requestDeleteCategory = () => {
+	pendingDelete.value = { type: "category" };
+	isDeleteModalOpen.value = true;
+};
+
+const requestDeleteTransaction = (row: TransactionView) => {
+	pendingDelete.value = {
+		type: "transaction",
+		transactionId: row.id,
+		description: row.description,
+	};
+	isDeleteModalOpen.value = true;
+};
+
+watch(isDeleteModalOpen, (open) => {
+	if (!open) {
+		pendingDelete.value = null;
+	}
+});
 
 watch(error, (newError) => {
 	if (newError) {
@@ -51,47 +136,31 @@ watch(error, (newError) => {
 });
 
 const columns = computed(() => [
-	...Object.keys(transactionsView.value[0] ?? {}).map((key) => ({
-		accessorKey: key,
-		header: TextTransformer.camelToTitle(key),
-	})),
+	...Object.keys(transactionsView.value[0] ?? {})
+		.filter((key) => key !== "id")
+		.map((key) => ({
+			accessorKey: key,
+			header: TextTransformer.camelToTitle(key),
+		})),
 	{
-		id: "actions",
-		meta: {
-			class: {
-				td: "text-right",
-			},
-		},
-		cell: () => {
-			return h(
-				UDropdownMenu,
-				{
-					content: {
-						align: "end",
-					},
-					items: getRowItems(),
-					"aria-label": "Actions dropdown",
-				},
-				() =>
-					h(UButton, {
-						icon: "i-lucide-ellipsis-vertical",
-						color: "neutral",
-						variant: "ghost",
-						"aria-label": "Actions dropdown",
-					}),
-			);
-		},
+		id: "action",
 	},
 ]);
 
-function getRowItems() {
+function getDropdownActions(row: TransactionView) {
 	return [
-		{
-			label: "Delete",
-			onSelect() {
-				alert("Delete!");
+		[
+			{
+				label: "Edit",
+				icon: "i-lucide-edit",
 			},
-		},
+			{
+				label: "Delete",
+				icon: "i-lucide-trash",
+				color: "error",
+				onSelect: () => requestDeleteTransaction(row),
+			},
+		],
 	];
 }
 </script>
@@ -114,7 +183,7 @@ function getRowItems() {
 			color="error"
 			class="cursor-pointer mb-4"
 			icon="i-lucide-trash"
-			@click="isDeleteModalOpen = true"
+			@click="requestDeleteCategory"
 		>
 			Delete
 		</UButton>
@@ -140,13 +209,52 @@ function getRowItems() {
 		:description="errorMessage"
 	/>
 
-	<UTable :data="transactionsView" :columns="columns" class="flex-1" />
+	<div class="overflow-x-auto max-w-[90vw] mx-auto px-4">
+		<UTable
+			v-model:pagination="pagination"
+			:data="transactionsView"
+			:columns="columns"
+			class="flex-1 min-w-max"
+			:pagination-options="{
+				getPaginationRowModel: getPaginationRowModel(),
+			}"
+			ref="table"
+		>
+			<template #action-cell="{ row }">
+				<UDropdownMenu :items="getDropdownActions(row.original)">
+					<UButton
+						icon="i-lucide-ellipsis-vertical"
+						color="neutral"
+						variant="ghost"
+						aria-label="Actions"
+					/>
+				</UDropdownMenu>
+			</template>
+			<template #date-header>
+				<div class="flex items-center gap-2">
+					<UIcon name="i-lucide-calendar" />
+					Date
+				</div>
+			</template>
+		</UTable>
+	</div>
+	<div
+		v-if="pagination.pageSize < transactionsView.length"
+		class="flex justify-end border-t border-default pt-4 px-4"
+	>
+		<UPagination
+			:page="(table?.tableApi?.getState().pagination.pageIndex || 0) + 1"
+			:items-per-page="table?.tableApi?.getState().pagination.pageSize"
+			:total="table?.tableApi?.getFilteredRowModel().rows.length"
+			@update:page="(page) => table?.tableApi?.setPageIndex(page - 1)"
+		/>
+	</div>
 	<Teleport to="body">
 		<PromptModal
 			v-model:open="isDeleteModalOpen"
-			message="Are you sure you want to delete this category?"
-			confirm-label="Delete"
-			@confirm="deleteCurrentCategory"
+			:message="deleteMessage"
+			:confirm-label="deleteConfirmLabel"
+			@confirm="onConfirmDelete"
 		/>
 	</Teleport>
 </template>

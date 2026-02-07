@@ -7,7 +7,7 @@ const supplyCacheKey = {
 };
 
 export function useTransactionService() {
-	const { insertTransaction, selectTransactions } =
+	const { insertTransaction, selectTransactions, deleteTransactionById } =
 		useTransactionRepository();
 
 	async function addTransaction(transaction: {
@@ -79,9 +79,25 @@ export function useTransactionService() {
 		);
 	}
 
+	async function deleteTransaction(id: string) {
+		const result = await deleteTransactionById(id);
+		if (result) {
+			const { fetchedAt } = useCache(
+				supplyCacheKey.getTransactions(),
+				CACHE_TTL,
+			);
+			fetchedAt.value = null;
+
+			await refreshNuxtData([supplyCacheKey.getTransactions()]);
+		}
+
+		return result;
+	}
+
 	return {
 		addTransaction,
 		getTransactions,
 		getTransactionsByCategory,
+		deleteTransaction,
 	};
 }

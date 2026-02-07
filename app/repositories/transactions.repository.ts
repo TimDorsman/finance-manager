@@ -33,18 +33,6 @@ export function useTransactionRepository() {
 
 		return data;
 	}
-	/*
-	{
-		amount: number;
-		category_id: string;
-		created_at: string | null;
-		description: string | null;
-		household_id: string;
-		id: string;
-		transaction_date: string;
-		user_id: string;
-	}
-	*/
 
 	async function selectTransactions(options?: TransactionQueryOptions) {
 		let query = supabase
@@ -72,8 +60,24 @@ export function useTransactionRepository() {
 		return data ?? [];
 	}
 
+	async function deleteTransactionById(id: string): Promise<boolean> {
+		console.log(id);
+
+		const { error } = await supabase
+			.from("transactions")
+			.delete()
+			.eq("id", id);
+
+		console.error(error);
+
+		if (error) throw error;
+
+		return true;
+	}
+
 	return {
 		insertTransaction,
 		selectTransactions,
+		deleteTransactionById,
 	};
 }

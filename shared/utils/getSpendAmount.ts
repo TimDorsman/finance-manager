@@ -21,7 +21,13 @@ export function getSpendAmountPerMonth(transactions: Transaction[]): number[] {
 			return 0;
 		})
 		.forEach((transaction) => {
-			const monthIndex = new Date(transaction.date).getMonth();
+			const transactionDate = new Date(transaction.date);
+			const monthIndex = transactionDate.getMonth();
+			const year = transactionDate.getFullYear();
+
+			if (year !== new Date().getFullYear()) {
+				return;
+			}
 
 			if (Number.isNaN(totalPerMonth[monthIndex])) {
 				return;
