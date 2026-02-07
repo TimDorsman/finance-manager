@@ -67,17 +67,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 			text: "Failed to create transaction. Please try again.",
 		};
 	}
-		return;
-	}
-
-	addTransaction({
-		amount: event.data.amount,
-		categoryId: categoryId,
-		date: event.data.date,
-		description: event.data.description,
-		householdId,
-		userId,
-	});
 }
 
 const { data: category } = getCategoryById(categoryId);
