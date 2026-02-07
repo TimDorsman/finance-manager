@@ -7,6 +7,10 @@ type TransactionView = Omit<
 	amount: string;
 };
 
+const UButton = resolveComponent("UButton");
+const UBadge = resolveComponent("UBadge");
+const UDropdownMenu = resolveComponent("UDropdownMenu");
+
 const errorMessage = ref<string | null>(null);
 const isDeleteModalOpen = ref(false);
 
@@ -45,6 +49,51 @@ watch(error, (newError) => {
 		transactions.value = [];
 	}
 });
+
+const columns = computed(() => [
+	...Object.keys(transactionsView.value[0] ?? {}).map((key) => ({
+		accessorKey: key,
+		header: TextTransformer.camelToTitle(key),
+	})),
+	{
+		id: "actions",
+		meta: {
+			class: {
+				td: "text-right",
+			},
+		},
+		cell: () => {
+			return h(
+				UDropdownMenu,
+				{
+					content: {
+						align: "end",
+					},
+					items: getRowItems(),
+					"aria-label": "Actions dropdown",
+				},
+				() =>
+					h(UButton, {
+						icon: "i-lucide-ellipsis-vertical",
+						color: "neutral",
+						variant: "ghost",
+						"aria-label": "Actions dropdown",
+					}),
+			);
+		},
+	},
+]);
+
+function getRowItems() {
+	return [
+		{
+			label: "Delete",
+			onSelect() {
+				alert("Delete!");
+			},
+		},
+	];
+}
 </script>
 
 <template>
@@ -91,7 +140,7 @@ watch(error, (newError) => {
 		:description="errorMessage"
 	/>
 
-	<UTable :data="transactionsView" class="flex-1" />
+	<UTable :data="transactionsView" :columns="columns" class="flex-1" />
 	<Teleport to="body">
 		<PromptModal
 			v-model:open="isDeleteModalOpen"
