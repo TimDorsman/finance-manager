@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getPaginationRowModel } from "@tanstack/vue-table";
+import { toPageError } from "~/utils/toPageError";
 
 type TransactionView = Omit<
 	Transaction,
@@ -39,12 +40,24 @@ const { getTransactionsByCategory, deleteTransaction } =
 	useTransactionService();
 const { deleteCategory, getCategoryById } = useCategoryService();
 
-const { data: category } = getCategoryById(categoryId);
+const { data: category, error: categoryError } = getCategoryById(categoryId);
 const {
 	data: transactions,
-	refresh,
-	error,
+	refresh: refreshTransactions,
+	error: transactionsError,
 } = await getTransactionsByCategory(categoryId);
+
+if (transactionsError.value) {
+	throw toPageError(
+		transactionsError.value,
+		400,
+		"Failed to load transactions.",
+	);
+}
+
+if (categoryError.value) {
+	throw toPageError(categoryError.value, 404, "Category not found.");
+}
 
 const transactionsView = computed<TransactionView[]>(() =>
 	transactions.value.map((transaction) => ({
@@ -79,22 +92,31 @@ const deleteConfirmLabel = computed(() => {
 });
 
 const deleteCurrentCategory = async () => {
-	const deleteError = await deleteCategory(categoryId);
-	if (deleteError) {
-		errorMessage.value = `Failed to delete category: ${deleteError.message}`;
-		return;
+	try {
+		const deleteError = await deleteCategory(categoryId);
+		if (deleteError) {
+			errorMessage.value = `Failed to delete category: ${deleteError.message}`;
+			return;
+		}
+
+		await navigateTo("/budget/overview");
+	} catch {
+		errorMessage.value = "Failed to delete category.";
 	}
-	await navigateTo("/budget/overview");
 };
 
 const deleteCurrentTransaction = async (id: string) => {
-	const result = await deleteTransaction(id);
-	if (!result) {
-		errorMessage.value = "Failed to delete transaction";
-		return;
-	}
+	try {
+		const result = await deleteTransaction(id);
+		if (!result) {
+			errorMessage.value = "Failed to delete transaction";
+			return;
+		}
 
-	await refresh();
+		await refreshTransactions();
+	} catch {
+		errorMessage.value = "Failed to delete transaction";
+	}
 };
 
 const onConfirmDelete = async () => {
@@ -136,7 +158,7 @@ watch(isDeleteModalOpen, (open) => {
 	}
 });
 
-watch(error, (newError) => {
+watch(transactionsError, (newError) => {
 	if (newError) {
 		errorMessage.value = "Failed to load transactions.";
 		transactions.value = [];
