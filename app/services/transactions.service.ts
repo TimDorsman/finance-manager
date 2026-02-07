@@ -82,13 +82,8 @@ export function useTransactionService() {
 	async function deleteTransaction(id: string) {
 		const result = await deleteTransactionById(id);
 		if (result) {
-			const { fetchedAt } = useCache(
-				supplyCacheKey.getTransactions(),
-				CACHE_TTL,
-			);
-			fetchedAt.value = null;
-
-			await refreshNuxtData([supplyCacheKey.getTransactions()]);
+			// @TODO: This is a bit hacky, we should ideally know the categoryId of the deleted transaction to only invalidate that cache
+			await refreshNuxtData();
 		}
 
 		return result;

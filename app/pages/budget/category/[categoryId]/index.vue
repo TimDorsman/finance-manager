@@ -40,8 +40,11 @@ const { getTransactionsByCategory, deleteTransaction } =
 const { deleteCategory, getCategoryById } = useCategoryService();
 
 const { data: category } = getCategoryById(categoryId);
-const { data: transactions, error } =
-	await getTransactionsByCategory(categoryId);
+const {
+	data: transactions,
+	refresh,
+	error,
+} = await getTransactionsByCategory(categoryId);
 
 const transactionsView = computed<TransactionView[]>(() =>
 	transactions.value.map((transaction) => ({
@@ -86,10 +89,12 @@ const deleteCurrentCategory = async () => {
 
 const deleteCurrentTransaction = async (id: string) => {
 	const result = await deleteTransaction(id);
-	if (result) {
+	if (!result) {
 		errorMessage.value = "Failed to delete transaction";
 		return;
 	}
+
+	await refresh();
 };
 
 const onConfirmDelete = async () => {
@@ -124,7 +129,10 @@ const requestDeleteTransaction = (row: TransactionView) => {
 
 watch(isDeleteModalOpen, (open) => {
 	if (!open) {
-		pendingDelete.value = null;
+		// Delay resetting pendingDelete to allow modal close animation to finish
+		setTimeout(() => {
+			pendingDelete.value = null;
+		}, 300);
 	}
 });
 
@@ -249,12 +257,12 @@ function getDropdownActions(row: TransactionView) {
 			@update:page="(page) => table?.tableApi?.setPageIndex(page - 1)"
 		/>
 	</div>
-	<Teleport to="body">
-		<PromptModal
-			v-model:open="isDeleteModalOpen"
-			:message="deleteMessage"
-			:confirm-label="deleteConfirmLabel"
-			@confirm="onConfirmDelete"
-		/>
-	</Teleport>
+	<PromptModal
+		v-model:open="isDeleteModalOpen"
+		:message="deleteMessage"
+		:confirm-label="deleteConfirmLabel"
+		@confirm="onConfirmDelete"
+		:portal="true"
+		:dismissible="true"
+	/>
 </template>

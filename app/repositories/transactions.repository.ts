@@ -61,14 +61,10 @@ export function useTransactionRepository() {
 	}
 
 	async function deleteTransactionById(id: string): Promise<boolean> {
-		console.log(id);
-
 		const { error } = await supabase
 			.from("transactions")
 			.delete()
 			.eq("id", id);
-
-		console.error(error);
 
 		if (error) throw error;
 
