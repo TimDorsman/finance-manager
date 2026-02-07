@@ -1,6 +1,6 @@
 import type { SupplyListItem } from "~~/shared/types/supply";
 
-const CACHE_TTL = 10_000; // 10 seconds
+const CACHE_TTL = 60_000; // 1 minute
 
 const supplyCacheKeys = {
 	orderedByGroup: () => "supplies:ordered-by-group",

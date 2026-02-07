@@ -38,8 +38,9 @@ export function useTransactionRepository() {
 		let query = supabase
 			.from("transactions")
 			.select(
-				"id, amount, description, categoryId:category_id, createdBy:user_id,  date:transaction_date",
-			);
+				"id, amount, description, categoryId:category_id, createdBy:user_id, date:transaction_date",
+			)
+			.order("transaction_date", { ascending: false });
 
 		if (options?.categoryId) {
 			query.eq("category_id", options.categoryId);

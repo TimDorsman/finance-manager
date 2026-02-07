@@ -204,7 +204,7 @@ function getDropdownActions(row: TransactionView) {
 			class="cursor-pointer"
 			icon="i-lucide-arrow-left"
 		>
-			Back to overview
+			<span class="hidden sm:inline">Back to overview</span>
 		</UButton>
 
 		<div class="flex gap-2 ml-auto">
@@ -218,7 +218,7 @@ function getDropdownActions(row: TransactionView) {
 					)
 				"
 			>
-				Add transaction
+				<span class="hidden sm:inline">Add transaction</span>
 			</UButton>
 
 			<UButton
@@ -227,7 +227,7 @@ function getDropdownActions(row: TransactionView) {
 				icon="i-lucide-trash"
 				@click="requestDeleteCategory"
 			>
-				Delete
+				<span class="hidden sm:inline">Delete</span>
 			</UButton>
 		</div>
 	</div>
@@ -240,7 +240,7 @@ function getDropdownActions(row: TransactionView) {
 	<BudgetBarChart
 		v-if="transactions.length > 0"
 		:data="getSpendAmountPerMonth(transactions)"
-		class="w-3/5 mx-auto mb-4 block"
+		class="w-11/12 md:w-4/5 mx-auto mb-4 block"
 	/>
 
 	<UAlert

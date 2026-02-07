@@ -5,7 +5,7 @@ const props = defineProps<{
 	transactions: Transaction[];
 }>();
 
-const getTotalSpendCurentMonth = computed(() =>
+const getTotalSpendCurrentMonth = computed(() =>
 	props.transactions
 		.filter(
 			(transaction) =>
@@ -25,7 +25,12 @@ const getTotalSpendCurentMonth = computed(() =>
 	>
 		<div class="flex flex-row justify-between gap-2 align-start">
 			<h4 class="text-lg font-medium text-primary">
-				{{ name }}
+				<NuxtLink
+					:to="`/budget/category/${id}`"
+					class="border-b-2 border-transparent hover:border-inherit cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+				>
+					{{ name }}
+				</NuxtLink>
 			</h4>
 			<UButton
 				size="sm"
@@ -41,7 +46,7 @@ const getTotalSpendCurentMonth = computed(() =>
 		<p class="font-medium mt-2">This month:</p>
 		<ul class="list-disc pl-5">
 			<li>Budget: €200</li>
-			<li>Spent: €{{ getTotalSpendCurentMonth }}</li>
+			<li>Spent: €{{ getTotalSpendCurrentMonth }}</li>
 		</ul>
 
 		<BudgetBarChart :data="getSpendAmountPerMonth(transactions)" />

@@ -81,7 +81,7 @@ const { data: category } = getCategoryById(categoryId);
 			class="cursor-pointer"
 			icon="i-lucide-arrow-left"
 		>
-			Back to category
+			<span class="hidden sm:inline">Back to category</span>
 		</UButton>
 	</div>
 	<h2
