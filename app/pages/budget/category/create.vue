@@ -67,6 +67,18 @@ const messageTitle = computed(() =>
 
 <template>
 	<UPage>
+		<div class="flex items-start w-full gap-2 mb-4">
+			<UButton
+				to="/budget/overview"
+				variant="soft"
+				color="primary"
+				class="cursor-pointer"
+				icon="i-lucide-arrow-left"
+			>
+				Back to overview
+			</UButton>
+		</div>
+
 		<h2
 			class="text-2xl lg:text-4xl font-semibold tracking-tight text-primary mb-16"
 		>

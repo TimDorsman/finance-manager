@@ -174,27 +174,40 @@ function getDropdownActions(row: TransactionView) {
 </script>
 
 <template>
-	<div class="flex flex-row items-start w-fit ml-auto gap-2">
+	<div class="flex items-start w-full gap-2 mb-4">
 		<UButton
-			variant="subtle"
+			to="/budget/overview"
+			variant="soft"
 			color="primary"
-			class="cursor-pointer mb-4"
-			icon="i-lucide-plus"
-			@click="
-				navigateTo(`/budget/category/${categoryId}/transaction/add`)
-			"
+			class="cursor-pointer"
+			icon="i-lucide-arrow-left"
 		>
-			Add transaction
+			Back to overview
 		</UButton>
-		<UButton
-			variant="subtle"
-			color="error"
-			class="cursor-pointer mb-4"
-			icon="i-lucide-trash"
-			@click="requestDeleteCategory"
-		>
-			Delete
-		</UButton>
+
+		<div class="flex gap-2 ml-auto">
+			<UButton
+				variant="subtle"
+				color="primary"
+				icon="i-lucide-plus"
+				@click="
+					navigateTo(
+						`/budget/category/${categoryId}/transaction/create`,
+					)
+				"
+			>
+				Add transaction
+			</UButton>
+
+			<UButton
+				variant="subtle"
+				color="error"
+				icon="i-lucide-trash"
+				@click="requestDeleteCategory"
+			>
+				Delete
+			</UButton>
+		</div>
 	</div>
 	<h2
 		class="text-2xl lg:text-4xl font-semibold tracking-tight text-white mb-16"

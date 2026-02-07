@@ -3,8 +3,8 @@ import { HouseholdRole } from "~/enums/household-role";
 
 const { household } = useActiveHousehold();
 
-const categoryService = useCategoryService();
-const transactionService = useTransactionService();
+const { getCategories } = useCategoryService();
+const { getTransactions } = useTransactionService();
 
 const {
 	data: categories,
@@ -17,17 +17,26 @@ const {
 		if (!household.value) return [];
 
 		const [categoryResult, transactions] = await Promise.all([
-			categoryService.getCategories(),
-			transactionService.getTransactions(),
+			getCategories(),
+			getTransactions(),
 		]);
 
 		const categoryList = categoryResult.data.value ?? [];
 
+		const transactionsByCategoryId = transactions.reduce<
+			Record<string, typeof transactions>
+		>((acc, transaction) => {
+			const key = transaction.categoryId;
+			if (!acc[key]) {
+				acc[key] = [];
+			}
+			acc[key].push(transaction);
+			return acc;
+		}, {});
+
 		return categoryList.map((category) => ({
 			...category,
-			transactions: transactions.filter(
-				(transaction) => transaction.categoryId === category.id,
-			),
+			transactions: transactionsByCategoryId[category.id] ?? [],
 		}));
 	},
 	{

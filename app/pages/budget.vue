@@ -5,7 +5,5 @@ await loadHousehold();
 </script>
 
 <template>
-	<NuxtLayout name="budget">
-		<NuxtPage />
-	</NuxtLayout>
+	<NuxtPage />
 </template>

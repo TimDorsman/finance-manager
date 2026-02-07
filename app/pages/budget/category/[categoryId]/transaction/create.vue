@@ -13,7 +13,7 @@ const categoryId = route.params.categoryId as string;
 
 const schema = z.object({
 	date: z.string().refine((v) => !Number.isNaN(Date.parse(v)), {
-		message: "Value must be date",
+		message: "Value must be a valid date",
 	}),
 	amount: z.coerce.number().positive("Amount must be positive"),
 	description: z.string().min(1, "Description is required"),
@@ -35,14 +35,48 @@ const messageTitle = computed(() =>
 	message.value.type === "success" ? "Success" : "Something went wrong",
 );
 
-function onSubmit(event: FormSubmitEvent<Schema>) {
+async function onSubmit(event: FormSubmitEvent<Schema>) {
+	// Clear any previous message
+	message.value = { type: null, text: null };
+
+	try {
+		await addTransaction({
+			amount: event.data.amount,
+			categoryId: categoryId,
+			date: event.data.date,
+			description: event.data.description,
+			householdId: household.value?.id!,
+			userId: user.value?.sub!,
+		});
+
+		// Set success message
+		message.value = {
+			type: "success",
+			text: "Transaction created successfully.",
+		};
+
+		// Optionally reset form state
+		state.date = "";
+		state.amount = null;
+		state.description = "";
+	} catch (error) {
+		// Log and set error message
+		console.error(error);
+		message.value = {
+			type: "error",
+			text: "Failed to create transaction. Please try again.",
+		};
+	}
+		return;
+	}
+
 	addTransaction({
 		amount: event.data.amount,
 		categoryId: categoryId,
 		date: event.data.date,
 		description: event.data.description,
-		householdId: household.value?.id!,
-		userId: user.value?.sub!,
+		householdId,
+		userId,
 	});
 }
 
@@ -50,6 +84,17 @@ const { data: category } = getCategoryById(categoryId);
 </script>
 
 <template>
+	<div class="flex items-start w-full gap-2 mb-4">
+		<UButton
+			:to="`/budget/category/${categoryId}`"
+			variant="soft"
+			color="primary"
+			class="cursor-pointer"
+			icon="i-lucide-arrow-left"
+		>
+			Back to category
+		</UButton>
+	</div>
 	<h2
 		class="text-2xl lg:text-4xl font-semibold tracking-tight text-primary mb-16"
 	>
