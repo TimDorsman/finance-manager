@@ -36,7 +36,6 @@ const messageTitle = computed(() =>
 );
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {
-	// Clear any previous message
 	message.value = { type: null, text: null };
 
 	try {

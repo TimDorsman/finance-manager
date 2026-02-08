@@ -71,6 +71,7 @@ const {
 
 			<UButton
 				v-if="household?.role === HouseholdRole.Admin"
+				class="cursor-pointer"
 				variant="soft"
 				color="primary"
 				icon="i-lucide-circle-plus"

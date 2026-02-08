@@ -5,22 +5,25 @@ const props = defineProps<{
 	transactions: Transaction[];
 }>();
 
-const getTotalSpendCurrentMonth = computed(() =>
-	props.transactions
-		.filter(
-			(transaction) =>
-				new Date(transaction.date).getMonth() ===
-					new Date().getMonth() &&
-				new Date(transaction.date).getFullYear() ===
-					new Date().getFullYear(),
-		)
-		.reduce((prev, curr) => (prev += curr.amount), 0),
-);
+const getSpendCurrentMonth = computed(() => {
+	const currentDate = new Date();
+	const currentMonth = currentDate.getMonth();
+	const currentYear = currentDate.getFullYear();
+
+	return props.transactions
+		.filter((transaction) => {
+			const transactionDate = new Date(transaction.date);
+			return (
+				transactionDate.getMonth() === currentMonth &&
+				transactionDate.getFullYear() === currentYear
+			);
+		})
+		.reduce((total, transaction) => total + transaction.amount, 0);
+});
 </script>
 
 <template>
 	<div
-		:key="id"
 		class="mt-6 p-4 bg-default/70 backdrop-blur border border-default rounded-lg shadow-sm"
 	>
 		<div class="flex flex-row justify-between gap-2 align-start">
@@ -46,7 +49,7 @@ const getTotalSpendCurrentMonth = computed(() =>
 		<p class="font-medium mt-2">This month:</p>
 		<ul class="list-disc pl-5">
 			<li>Budget: €200</li>
-			<li>Spent: €{{ getTotalSpendCurrentMonth }}</li>
+			<li>Spent: €{{ getSpendCurrentMonth }}</li>
 		</ul>
 
 		<BudgetBarChart :data="getSpendAmountPerMonth(transactions)" />

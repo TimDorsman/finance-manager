@@ -5,39 +5,42 @@ export function getSpendAmountPerMonth(transactions: Transaction[]): number[] {
 
 	const totalPerMonth: number[] = Array(12).fill(0);
 
-	transactions
-		.sort((a, b) => {
-			const aTime = new Date(a.date).getTime();
-			const bTime = new Date(b.date).getTime();
+	transactions.forEach((transaction) => {
+		const transactionDate = new Date(transaction.date);
+		const monthIndex = transactionDate.getMonth();
+		const year = transactionDate.getFullYear();
 
-			if (aTime < bTime) {
-				return 1;
-			}
+		if (year !== new Date().getFullYear()) {
+			return;
+		}
 
-			if (aTime > bTime) {
-				return -1;
-			}
+		if (Number.isNaN(totalPerMonth[monthIndex])) {
+			return;
+		}
 
-			return 0;
-		})
-		.forEach((transaction) => {
-			const transactionDate = new Date(transaction.date);
-			const monthIndex = transactionDate.getMonth();
-			const year = transactionDate.getFullYear();
+		let total: number = totalPerMonth[monthIndex] ?? 0;
+		total += transaction.amount;
 
-			if (year !== new Date().getFullYear()) {
-				return;
-			}
-
-			if (Number.isNaN(totalPerMonth[monthIndex])) {
-				return;
-			}
-
-			let total: number = totalPerMonth[monthIndex] ?? 0;
-			total += transaction.amount;
-
-			totalPerMonth[monthIndex] = total;
-		});
+		totalPerMonth[monthIndex] = total;
+	});
 
 	return totalPerMonth;
+}
+
+export function getSpendAmountByMonth(
+	transactions: Transaction[],
+	date: Date,
+): number {
+	const currentMonth = date.getMonth();
+	const currentYear = date.getFullYear();
+
+	return transactions
+		.filter((transaction) => {
+			const transactionDate = new Date(transaction.date);
+			return (
+				transactionDate.getMonth() === currentMonth &&
+				transactionDate.getFullYear() === currentYear
+			);
+		})
+		.reduce((total, transaction) => total + transaction.amount, 0);
 }

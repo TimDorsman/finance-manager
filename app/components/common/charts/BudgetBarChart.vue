@@ -10,10 +10,19 @@ import {
 	CategoryScale,
 	LinearScale,
 } from "chart.js";
+
+import type { Chart, ChartEvent, ActiveElement } from "chart.js";
 import { Bar } from "vue-chartjs";
 
 const props = defineProps<{
 	data: number[];
+}>();
+
+const emit = defineEmits<{
+	(
+		event: "bar-clicked",
+		value: { month: number; budget: number; spent: number },
+	): void;
 }>();
 
 // Register Chart.js components
@@ -89,6 +98,26 @@ const chartOptions = ref({
 				label: (ctx: any) => `${ctx.dataset.label}: €${ctx.raw}`,
 			},
 		},
+	},
+	onClick(_: ChartEvent, elements: ActiveElement[], chart: Chart): void {
+		const element = elements[0];
+		if (!element) return;
+
+		const { datasetIndex, index } = element;
+
+		const labels = chart.data.labels;
+		const dataset = chart.data.datasets[datasetIndex];
+
+		if (!labels || !dataset) return;
+
+		const rawValue = dataset.data[index];
+		const budget = typeof rawValue === "number" ? rawValue : 0;
+
+		emit("bar-clicked", {
+			month: index,
+			budget,
+			spent: props.data[index] ?? 0,
+		});
 	},
 });
 </script>

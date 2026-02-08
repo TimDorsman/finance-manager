@@ -13,7 +13,11 @@ export function useCategoryRepository() {
 			.from("categories")
 			.insert([{ name, scope, household_id: householdId }]);
 
-		return error;
+		if (error) {
+			throw error;
+		}
+
+		return null;
 	}
 
 	async function selectCategories() {
@@ -23,7 +27,9 @@ export function useCategoryRepository() {
 				"id,name,scope,ownerUserId:owner_user_id,householdId:household_id,isArchived:is_archived,createdAt:created_at",
 			);
 
-		if (error) throw error;
+		if (error) {
+			throw error;
+		}
 		return data ?? [];
 	}
 
@@ -50,7 +56,9 @@ export function useCategoryRepository() {
 			.from("categories")
 			.delete()
 			.eq("id", id);
-		if (error) throw error;
+		if (error) {
+			throw error;
+		}
 		return null;
 	}
 

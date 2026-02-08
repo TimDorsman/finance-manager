@@ -67,17 +67,36 @@ export function useCategoryService() {
 		);
 	}
 
-	function addCategory(
+	async function addCategory(
 		name: string,
 		scope: Scope,
 		householdId: string,
 	): Promise<PostgrestError | null> {
-		return insertCategory(name, scope, householdId);
+		const error = await insertCategory(name, scope, householdId);
+
+		if (!error) {
+			useCache(supplyCacheKeys.getCategories(), CACHE_TTL).invalidate();
+		}
+
+		return error;
 	}
 
 	async function deleteCategory(id: string): Promise<PostgrestError | null> {
 		const { deleteCategoryById } = useCategoryRepository();
-		return await deleteCategoryById(id);
+		const error = await deleteCategoryById(id);
+
+		if (!error) {
+			// Invalidate caches
+			const cacheKeysToInvalidate = [
+				supplyCacheKeys.getCategories(),
+				supplyCacheKeys.getCategoryById(id),
+			];
+			cacheKeysToInvalidate.forEach((key) =>
+				useCache(key, CACHE_TTL).invalidate(),
+			);
+		}
+
+		return error;
 	}
 
 	return {

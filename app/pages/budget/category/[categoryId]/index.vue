@@ -31,6 +31,8 @@ const pagination = ref({
 	pageSize: 10,
 });
 
+const currentSelectedMonth = ref(new Date());
+
 const route = useRoute();
 const categoryId = route.params.categoryId as string;
 
@@ -181,10 +183,6 @@ function getDropdownActions(row: TransactionView) {
 	return [
 		[
 			{
-				label: "Edit",
-				icon: "i-lucide-edit",
-			},
-			{
 				label: "Delete",
 				icon: "i-lucide-trash",
 				color: "error",
@@ -193,6 +191,10 @@ function getDropdownActions(row: TransactionView) {
 		],
 	];
 }
+
+const getTotalAmountSpendCurrentMonth = computed(() =>
+	getSpendAmountByMonth(transactions.value, currentSelectedMonth.value),
+);
 </script>
 
 <template>
@@ -231,16 +233,29 @@ function getDropdownActions(row: TransactionView) {
 			</UButton>
 		</div>
 	</div>
-	<h2
-		class="text-2xl lg:text-4xl font-semibold tracking-tight text-white mb-16"
-	>
-		{{ category?.name }}
-	</h2>
+	<div class="flex flex-row justify-between">
+		<h2
+			class="text-2xl lg:text-4xl font-semibold tracking-tight text-secondary mb-16 dark:text-white w-fit pb-2 border-b-2 border-secondary dark:border-white"
+		>
+			{{ category?.name }}
+		</h2>
+		<div>
+			<span class="flex items-center gap-2">
+				<span class="text-xl font-medium">Spent:</span>
+				<span
+					class="text-3xl font-medium text-green-400 dark:text-green-700"
+				>
+					€{{ getTotalAmountSpendCurrentMonth }}
+				</span>
+			</span>
+		</div>
+	</div>
 
 	<BudgetBarChart
 		v-if="transactions.length > 0"
 		:data="getSpendAmountPerMonth(transactions)"
 		class="w-11/12 md:w-4/5 mx-auto mb-4 block"
+		@bar-clicked="(response) => console.log('Event!', response)"
 	/>
 
 	<UAlert
