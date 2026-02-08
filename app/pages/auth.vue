@@ -48,6 +48,16 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 
 	await navigateTo("/");
 }
+
+async function signInWithGoogle() {
+	error.value = null;
+	const { error: errorResponse } = await supabase.auth.signInWithOAuth({
+		provider: "google",
+	});
+	if (errorResponse) {
+		error.value = errorResponse.message;
+	}
+}
 function onUpdateOpen(isOpen: boolean) {
 	if (!isOpen) {
 		// User closed the alert
@@ -68,6 +78,16 @@ function onUpdateOpen(isOpen: boolean) {
 					:fields="fields"
 					@submit.prevent="onSubmit"
 				/>
+				<USeparator class="my-2" />
+				<UButton
+					color="primary"
+					variant="outline"
+					class="w-full flex justify-center"
+					@click="signInWithGoogle"
+				>
+					<Icon name="logos:google-icon" width="24" class="mr-2" />
+					Sign in with Google
+				</UButton>
 
 				<UAlert
 					v-if="error"
