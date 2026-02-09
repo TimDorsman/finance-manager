@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui";
-
 const user = useSupabaseUser();
+
+console.log(user);
 const supabase = useSupabaseClient();
 
-const items = computed<NavigationMenuItem[]>(() => {
+const items = computed(() => {
 	if (!user.value) {
 		return [];
 	}
@@ -38,6 +38,17 @@ const items = computed<NavigationMenuItem[]>(() => {
 				},
 			],
 		},
+		{
+			label: "Logout",
+			icon: "i-lucide-log-out",
+			onSelect: handleLogout,
+			class: "flex sm:hidden",
+			ui: {
+				link: "text-red-400 hover:text-red-600 hover:bg-red-400/10",
+				linkLeadingIcon: "text-red-400",
+				linkLabel: "text-red-400",
+			},
+		},
 	];
 });
 
@@ -45,6 +56,10 @@ const handleLogout = async () => {
 	await supabase.auth.signOut();
 	await navigateTo("/auth");
 };
+
+const avatarSrc = computed(() => {
+	return user.value?.user_metadata?.avatar_url ?? null;
+});
 </script>
 
 <template>
@@ -62,27 +77,78 @@ const handleLogout = async () => {
 			</div>
 		</template>
 
-		<ClientOnly>
-			<UNavigationMenu
-				:items="items"
-				:ui="{
-					list: 'gap-2',
-				}"
-			/>
-		</ClientOnly>
+		<UNavigationMenu
+			:items="items"
+			:ui="{
+				list: 'gap-2',
+			}"
+		/>
 
 		<template #right>
 			<UColorModeButton />
-			<IconLogOut
-				v-if="user"
-				:size="20"
-				class="cursor-pointer"
-				@click="handleLogout"
-			/>
+
+			<ClientOnly>
+				<UPopover
+					v-if="user"
+					class="hidden md:block"
+					side="bottom"
+					align="end"
+					:side-offset="8"
+				>
+					<Avatar :src="avatarSrc" size="sm" class="cursor-pointer" />
+					<template #content>
+						<div class="w-56 p-3 space-y-3">
+							<div class="flex items-center gap-3">
+								<RouterLink to="/profile">
+									<Avatar :src="avatarSrc" size="md" />
+								</RouterLink>
+								<div class="min-w-0">
+									<p class="text-sm font-medium truncate">
+										{{
+											user.user_metadata?.full_name ??
+											"User"
+										}}
+									</p>
+									<p class="text-xs text-muted truncate">
+										{{ user.email }}
+									</p>
+								</div>
+							</div>
+
+							<USeparator />
+
+							<UButton
+								variant="ghost"
+								color="error"
+								block
+								@click="handleLogout"
+							>
+								Logout
+							</UButton>
+						</div>
+					</template>
+				</UPopover>
+			</ClientOnly>
 		</template>
 
 		<template #body>
 			<ClientOnly>
+				<div
+					v-if="user"
+					class="md:hidden px-4 py-4 flex items-center gap-3 border-b border-b-blue-900 mb-4"
+				>
+					<RouterLink to="/profile">
+						<Avatar :src="avatarSrc" size="md" />
+					</RouterLink>
+					<div class="min-w-0">
+						<p class="text-sm font-medium truncate">
+							{{ user.user_metadata?.full_name ?? "User" }}
+						</p>
+						<p class="text-xs text-muted truncate">
+							{{ user.email }}
+						</p>
+					</div>
+				</div>
 				<UNavigationMenu
 					:items="items"
 					orientation="vertical"
