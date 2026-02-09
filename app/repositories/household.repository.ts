@@ -10,7 +10,7 @@ export function useHouseholdRepository() {
 			.single();
 
 		if (error) {
-			return null; // ❗️ DO NOT throw auth-related errors
+			return null;
 		}
 
 		if (!data?.household) {

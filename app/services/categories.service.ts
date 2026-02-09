@@ -86,7 +86,6 @@ export function useCategoryService() {
 		const error = await deleteCategoryById(id);
 
 		if (!error) {
-			// Invalidate caches
 			const cacheKeysToInvalidate = [
 				supplyCacheKeys.getCategories(),
 				supplyCacheKeys.getCategoryById(id),

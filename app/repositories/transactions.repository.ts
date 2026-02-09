@@ -57,7 +57,9 @@ export function useTransactionRepository() {
 
 		const { data, error } = await query;
 
-		if (error) throw error;
+		if (error) {
+			throw error;
+		}
 		return data ?? [];
 	}
 
@@ -67,7 +69,9 @@ export function useTransactionRepository() {
 			.delete()
 			.eq("id", id);
 
-		if (error) throw error;
+		if (error) {
+			throw error;
+		}
 
 		return true;
 	}
