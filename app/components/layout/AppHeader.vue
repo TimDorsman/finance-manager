@@ -1,7 +1,5 @@
 <script setup lang="ts">
 const user = useSupabaseUser();
-
-console.log(user);
 const supabase = useSupabaseClient();
 
 const items = computed(() => {
