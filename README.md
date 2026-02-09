@@ -74,4 +74,4 @@ bun run preview
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
 
-Generate Database Scheme Types: npx supabase gen types typescript --project-id yjnpzaishmakkgevabgv --schema public > app/types/supabase.ts
+Generate Database Scheme Types: npx supabase gen types typescript --project-id yjnpzaishmakkgevabgv --schema public > shared/types/database.ts

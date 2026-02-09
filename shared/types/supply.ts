@@ -1,4 +1,4 @@
-import type { Database } from "~/types/supabase.ts";
+import type { Database } from "./database";
 
 export type SupplyRow = Database["public"]["Tables"]["supplies"]["Row"];
 

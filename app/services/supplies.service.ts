@@ -1,22 +1,23 @@
-import type { SupplyListItem } from "~/types/supply";
+import type { SupplyListItem } from "~~/shared/types/supply";
 
 const CACHE_TTL = 60_000; // 1 minute
+
+const supplyCacheKeys = {
+	orderedByGroup: () => "supplies:ordered-by-group",
+};
 
 export function useSupplyService() {
 	const { findAllOrderedByGroup, markOutOfStock } = useSuppliesRepository();
 
-	const cacheKey = "supplies:ordered-by-group";
-	const fetchedAt = useState<number | null>(
-		`${cacheKey}:fetchedAt`,
-		() => null
-	);
-
 	function fetchSuppliesOrderedByGroup() {
+		const cacheKey = supplyCacheKeys.orderedByGroup();
+		const { fetchedAt, update } = useCache(cacheKey, CACHE_TTL);
+
 		return useAsyncData<SupplyListItem[]>(
 			cacheKey,
 			async () => {
 				const data = await findAllOrderedByGroup();
-				fetchedAt.value = Date.now();
+				update();
 				return data;
 			},
 			{
@@ -29,15 +30,21 @@ export function useSupplyService() {
 
 					return nuxtApp.payload.data[key];
 				},
-			}
+			},
 		);
 	}
 
 	async function markSupplyOutOfStock(supplyId: string) {
-		await markOutOfStock(supplyId);
+		const result = await markOutOfStock(supplyId);
 
-		fetchedAt.value = null;
-		await refreshNuxtData(cacheKey);
+		if (result) {
+			const cacheKey = supplyCacheKeys.orderedByGroup();
+			const { invalidate } = useCache(cacheKey, CACHE_TTL);
+			invalidate();
+			await refreshNuxtData(cacheKey);
+		}
+
+		return result;
 	}
 
 	return {

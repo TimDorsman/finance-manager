@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useOutOfStockSuppliesService } from "~/services/outOfStockSupplies.service";
-import type { SupplyListItem } from "~/types/supply";
 
 const { fetchOutOfStockSuppliesOrderedByGroup, markOutOfStockSupply } =
 	useOutOfStockSuppliesService();
@@ -15,7 +14,6 @@ onMounted(async () => {
 let channel: any | null = null;
 
 const handleChange = async (event: any) => {
-	console.log(event.new);
 	const response = await fetchOutOfStockSuppliesOrderedByGroup();
 	supplies.value = response;
 };
@@ -37,7 +35,7 @@ onMounted(async () => {
 				schema: "public",
 				table: "out_of_stock_supplies",
 			},
-			handleChange
+			handleChange,
 		)
 		.subscribe();
 });

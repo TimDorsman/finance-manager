@@ -1,5 +1,5 @@
-import type { Database } from "~/types/supabase";
-import type { SupplyListItem } from "~/types/supply";
+import type { Database } from "~~/shared/types/database";
+import type { SupplyListItem } from "~~/shared/types/supply";
 
 export const useSuppliesRepository = () => {
 	const supabase = useSupabaseClient<Database>();
@@ -17,7 +17,7 @@ export const useSuppliesRepository = () => {
 					name,
 					color
 				)
-			`
+			`,
 			)
 			.order("name", {
 				foreignTable: "supply_groups",
@@ -35,14 +35,16 @@ export const useSuppliesRepository = () => {
 		}));
 	};
 
-	const markOutOfStock = async (supplyId: string): Promise<void> => {
-		const { error } = await supabase
+	const markOutOfStock = async (supplyId: string) => {
+		const { data, error } = await supabase
 			.from("out_of_stock_supplies")
 			.insert({ supply_id: supplyId });
 
 		if (error) {
 			throw error;
 		}
+
+		return data;
 	};
 
 	return {

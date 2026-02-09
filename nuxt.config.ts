@@ -2,6 +2,7 @@
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineNuxtConfig({
+	ssr: false,
 	compatibilityDate: "2026-01-07",
 	future: {
 		compatibilityVersion: 4,
@@ -23,8 +24,19 @@ export default defineNuxtConfig({
 	typescript: {
 		typeCheck: true,
 	},
+	devServer: {
+		host: "0.0.0.0",
+		port: 3000,
+	},
 	imports: {
-		dirs: ["~/repositories", "~/services"],
+		dirs: [
+			"~/repositories",
+			"~/services",
+			"shared/types",
+			"shared/types/**",
+			"~/composables",
+			"~/composables/**",
+		],
 	},
 	components: [
 		{
