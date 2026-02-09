@@ -64,9 +64,9 @@ if (categoryError.value) {
 const transactionsView = computed<TransactionView[]>(() =>
 	transactions.value.map((transaction) => ({
 		id: transaction.id,
-		amount: transaction.amount.toFixed(2),
 		description: transaction.description,
 		date: new Date(transaction.date).toLocaleDateString(),
+		amount: transaction.amount.toFixed(2),
 		createdBy: transaction.createdBy,
 	})),
 );
@@ -219,6 +219,7 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 						`/budget/category/${categoryId}/transaction/create`,
 					)
 				"
+				class="cursor-pointer"
 			>
 				<span class="hidden sm:inline">Add transaction</span>
 			</UButton>
@@ -228,6 +229,7 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 				color="error"
 				icon="i-lucide-trash"
 				@click="requestDeleteCategory"
+				class="cursor-pointer"
 			>
 				<span class="hidden sm:inline">Delete</span>
 			</UButton>
@@ -278,6 +280,15 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 			}"
 			ref="table"
 		>
+			<template #date-header>
+				<div class="flex items-center gap-2">
+					<UIcon name="i-lucide-calendar" />
+					Date
+				</div>
+			</template>
+			<template #amount-cell="{ row }">
+				<span> €{{ row.original.amount }} </span>
+			</template>
 			<template #action-cell="{ row }">
 				<UDropdownMenu :items="getDropdownActions(row.original)">
 					<UButton
@@ -287,12 +298,6 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 						aria-label="Actions"
 					/>
 				</UDropdownMenu>
-			</template>
-			<template #date-header>
-				<div class="flex items-center gap-2">
-					<UIcon name="i-lucide-calendar" />
-					Date
-				</div>
 			</template>
 		</UTable>
 	</div>
