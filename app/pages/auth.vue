@@ -78,7 +78,7 @@ function onUpdateOpen(isOpen: boolean) {
 					:fields="fields"
 					@submit.prevent="onSubmit"
 				/>
-				<USeparator class="my-2" />
+				<USeparator class="my-2 h-2" color="primary" />
 				<UButton
 					color="primary"
 					variant="outline"
