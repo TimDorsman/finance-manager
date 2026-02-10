@@ -4,12 +4,12 @@ import * as z from "zod";
 
 const route = useRoute();
 const user = useSupabaseUser();
+const categoryId = route.params.categoryId as string;
 
 const { household } = useActiveHousehold();
 const { addTransaction } = useTransactionService();
 const { getCategoryById } = useCategoryService();
-
-const categoryId = route.params.categoryId as string;
+const { data: category } = getCategoryById(categoryId);
 
 const schema = z.object({
 	date: z.string().refine((v) => !Number.isNaN(Date.parse(v)), {
@@ -20,46 +20,68 @@ const schema = z.object({
 });
 type Schema = z.output<typeof schema>;
 
+type FormState = {
+	date: string;
+	amount: number | null;
+	description: string;
+};
+
 const message = ref<{ text: string | null; type: "error" | "success" | null }>({
 	type: null,
 	text: null,
 });
 
-const state = reactive({
+const initialState = (): FormState => ({
 	date: "",
 	amount: null,
 	description: "",
 });
+const formState = reactive(initialState());
 
 const messageTitle = computed(() =>
 	message.value.type === "success" ? "Success" : "Something went wrong",
 );
 
+type FieldModel = keyof FormState;
+
+type FormField = {
+	label: string;
+	name: FieldModel;
+	type: string;
+	model: FieldModel;
+};
+
+const baseFormFields: Array<Omit<FormField, "model">> = [
+	{ label: "Date", name: "date", type: "date" },
+	{ label: "Amount", name: "amount", type: "number" },
+	{
+		label: "Description",
+		name: "description",
+		type: "text",
+	},
+];
+
+const formFields: FormField[] = baseFormFields.map((field) => ({
+	...field,
+	model: field.name,
+}));
 async function onSubmit(event: FormSubmitEvent<Schema>) {
 	message.value = { type: null, text: null };
-
 	try {
 		await addTransaction({
 			amount: event.data.amount,
-			categoryId: categoryId,
+			categoryId,
 			date: event.data.date,
 			description: event.data.description,
 			householdId: household.value?.id!,
 			userId: user.value?.sub!,
 		});
-
-		// Set success message
 		message.value = {
 			type: "success",
 			text: "Transaction created successfully.",
 		};
-
-		// Optionally reset form state
-		state.date = "";
-		state.amount = null;
-		state.description = "";
+		Object.assign(formState, initialState());
 	} catch (error) {
-		// Log and set error message
 		console.error(error);
 		message.value = {
 			type: "error",
@@ -68,7 +90,11 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 	}
 }
 
-const { data: category } = getCategoryById(categoryId);
+const messageIcon = computed(() =>
+	message.value.type === "success"
+		? "i-lucide-check-circle"
+		: "i-lucide-x-circle",
+);
 </script>
 
 <template>
@@ -91,33 +117,20 @@ const { data: category } = getCategoryById(categoryId);
 	</h2>
 	<UForm
 		:schema="schema"
-		:state="state"
+		:state="formState"
 		class="space-y-4 w-full lg:w-1/3 mb-4"
 		@submit="onSubmit"
 	>
-		<UFormField label="Date" name="date">
-			<UInput
-				v-model="state.date"
-				type="date"
-				size="md"
-				:ui="{ root: 'w-full' }"
-			/>
-		</UFormField>
-		<UFormField label="Amount" name="amount">
-			<UInput
-				v-model="state.amount"
-				type="number"
-				size="md"
-				:ui="{ root: 'w-full' }"
-			/>
-		</UFormField>
-		<UFormField label="Description" name="description">
-			<UInput
-				v-model="state.description"
-				size="md"
-				:ui="{ root: 'w-full' }"
-			/>
-		</UFormField>
+		<template v-for="field in formFields" :key="field.name">
+			<UFormField :label="field.label" :name="field.name">
+				<UInput
+					v-model="formState[field.model]"
+					:type="field.type"
+					size="md"
+					:ui="{ root: 'w-full' }"
+				/>
+			</UFormField>
+		</template>
 		<UButton
 			type="submit"
 			class="cursor-pointer"
@@ -127,14 +140,13 @@ const { data: category } = getCategoryById(categoryId);
 			Submit
 		</UButton>
 	</UForm>
-
 	<UAlert
 		v-if="message.type && message.text"
 		:title="messageTitle"
 		:description="message.text"
 		:color="message.type"
+		:icon="messageIcon"
 		variant="subtle"
 		class="w-full md:w-fit"
-		icon="i-lucide-check-circle"
 	/>
 </template>
