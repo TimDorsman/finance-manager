@@ -55,9 +55,19 @@ const handleLogout = async () => {
 	await navigateTo("/auth");
 };
 
-const avatarSrc = computed(() => {
-	return user.value?.user_metadata?.avatar_url ?? null;
-});
+const avatarSrc = ref<string | undefined>(undefined);
+
+watch(
+	() => user.value,
+	(user) => {
+		if (user && !avatarSrc.value) {
+			avatarSrc.value = user.user_metadata?.avatar_url ?? undefined;
+		}
+	},
+	{ immediate: true },
+);
+
+console.log({ avatarSrc: avatarSrc.value });
 </script>
 
 <template>
