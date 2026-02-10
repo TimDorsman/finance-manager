@@ -8,7 +8,12 @@ export default defineNuxtConfig({
 		compatibilityVersion: 4,
 	},
 	devtools: { enabled: false },
-	modules: ["@nuxt/ui", "@nuxtjs/supabase", "nuxt-lucide-icons"],
+	modules: [
+		"@nuxt/ui",
+		"@nuxtjs/supabase",
+		"nuxt-lucide-icons",
+		"@nuxt/icon",
+	],
 	supabase: {
 		redirect: false,
 		url: process.env.SUPABASE_URL,
