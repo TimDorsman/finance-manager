@@ -58,9 +58,9 @@ async function signInWithGoogle() {
 		error.value = errorResponse.message;
 	}
 }
+
 function onUpdateOpen(isOpen: boolean) {
 	if (!isOpen) {
-		// User closed the alert
 		error.value = null;
 	}
 }

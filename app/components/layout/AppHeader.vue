@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "@nuxt/ui";
+import type { zNavigationMenuItem as NavigationMenuItem } from "@nuxt/ui";
 
 const user = useSupabaseUser();
 const supabase = useSupabaseClient();
