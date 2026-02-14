@@ -1,4 +1,4 @@
-import { TransactionRepository } from "~/server/repositories/transaction.repository";
+import { TransactionRepository } from "../repositories/transaction.repository";
 
 export interface CreateTransactionDTO {
 	amount: number;

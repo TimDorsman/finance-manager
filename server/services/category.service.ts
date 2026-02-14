@@ -1,10 +1,10 @@
-import { CategoryRepository } from "~/server/repositories/category.repository";
+import type { CategoryRepository } from "../repositories/category.repository";
 
 export class CategoryService {
 	constructor(private readonly repo: CategoryRepository) {}
 
 	async getCategoryById(id: string) {
-		const data = await this.repo.selectCategoryById(id);
+		const data = await this.repo.selectById(id);
 
 		if (!data) return null;
 
@@ -15,7 +15,7 @@ export class CategoryService {
 	}
 
 	async getCategories() {
-		const categories = await this.repo.selectCategories();
+		const categories = await this.repo.select();
 
 		return categories.map((category) => ({
 			...category,
@@ -39,10 +39,10 @@ export class CategoryService {
 			});
 		}
 
-		await this.repo.insertCategory(name, scope, householdId);
+		await this.repo.insert(name, scope, householdId);
 	}
 
 	async deleteCategory(id: string): Promise<void> {
-		await this.repo.deleteCategoryById(id);
+		await this.repo.delete(id);
 	}
 }

@@ -4,7 +4,7 @@ import type { Database } from "~~/shared/types/database";
 export class CategoryRepository {
 	constructor(private readonly supabase: SupabaseClient<Database>) {}
 
-	async insertCategory(
+	async insert(
 		name: string,
 		scope: Scope,
 		householdId: string,
@@ -18,7 +18,7 @@ export class CategoryRepository {
 		}
 	}
 
-	async selectCategories() {
+	async select() {
 		const { data, error } = await this.supabase.from("categories").select(`
 			id,
 			name,
@@ -36,7 +36,7 @@ export class CategoryRepository {
 		return data ?? [];
 	}
 
-	async selectCategoryById(id: string) {
+	async selectById(id: string) {
 		const { data, error } = await this.supabase
 			.from("categories")
 			.select(
@@ -60,7 +60,7 @@ export class CategoryRepository {
 		return data;
 	}
 
-	async deleteCategoryById(id: string): Promise<void> {
+	async delete(id: string): Promise<void> {
 		const { error } = await this.supabase
 			.from("categories")
 			.delete()

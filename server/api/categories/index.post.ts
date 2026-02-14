@@ -1,8 +1,8 @@
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
 import { readBody } from "h3";
 import type { CategoryScope } from "~/enums/category-scope";
-import { CategoryRepository } from "~/server/repositories/category.repository";
-import { CategoryService } from "~/server/services/category.service";
+import { CategoryRepository } from "~~/server/repositories/category.repository";
+import { CategoryService } from "~~/server/services/category.service";
 
 export default defineEventHandler(async (event) => {
 	const user = await serverSupabaseUser(event);

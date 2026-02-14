@@ -1,6 +1,6 @@
 import { serverSupabaseClient } from "#supabase/server";
-import { CategoryRepository } from "~/server/repositories/category.repository";
-import { CategoryService } from "~/server/services/category.service";
+import { CategoryRepository } from "~~/server/repositories/category.repository";
+import { CategoryService } from "~~/server/services/category.service";
 
 export default cachedEventHandler(
 	async (event) => {

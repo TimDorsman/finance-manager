@@ -1,7 +1,7 @@
 import { serverSupabaseClient } from "#supabase/server";
 import { getRouterParam } from "h3";
-import { CategoryRepository } from "~/server/repositories/category.repository";
-import { CategoryService } from "~/server/services/category.service";
+import { CategoryRepository } from "~~/server/repositories/category.repository";
+import { CategoryService } from "~~/server/services/category.service";
 
 export default defineEventHandler(async (event) => {
 	const categoryId = getRouterParam(event, "categoryId");
