@@ -56,7 +56,7 @@ const categoriesWithTransactions = computed(() => {
 
 <template>
 	<h2
-		class="text-2xl md:text-4xl font-semibold tracking-tight text-primary mb-16"
+		class="text-2xl md:text-4xl font-semibold tracking-tight text-primary mb-8 md:mb-16"
 	>
 		Household
 		<span class="font-bold text-secondary dark:text-white">
