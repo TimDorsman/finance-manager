@@ -1,16 +1,19 @@
+const { data, pending, error, refresh } = useFetch<Household | null>(
+	"/api/household",
+	{
+		key: "active-household",
+	},
+);
+
+const household = useState<Household | null>("household", () => null);
+
+watchEffect(() => {
+	household.value = data.value ?? null;
+});
+
 export function useActiveHousehold() {
-	const household = useState<Household | null>("household", () => null);
-
-	const { data, pending, error, refresh } = useFetch<Household | null>(
-		"/api/household",
-	);
-
-	watchEffect(() => {
-		household.value = data.value ?? null;
-	});
-
 	return {
-		household,
+		household: readonly(household),
 		pending,
 		error,
 		refresh,

@@ -1,9 +1,11 @@
 import { serverSupabaseClient } from "#supabase/server";
 import { TransactionRepository } from "~~/server/repositories/transaction.repository";
 import { TransactionService } from "~~/server/services/transaction.service";
+import { authenticateUser } from "~~/server/utils/authenticateUser";
 
 export default defineEventHandler(async (event) => {
 	const id = getRouterParam(event, "id");
+	await authenticateUser(event);
 
 	if (!id) {
 		throw createError({

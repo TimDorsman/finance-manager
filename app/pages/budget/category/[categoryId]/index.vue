@@ -191,8 +191,6 @@ function getDropdownActions(row: TransactionView) {
 const getTotalAmountSpendCurrentMonth = computed(() =>
 	getSpendAmountByMonth(transactions.value, currentSelectedMonth.value),
 );
-
-const test = ref(true);
 </script>
 
 <template>

@@ -2,9 +2,11 @@ import { serverSupabaseClient } from "#supabase/server";
 import { getRouterParam } from "h3";
 import { CategoryRepository } from "~~/server/repositories/category.repository";
 import { CategoryService } from "~~/server/services/category.service";
+import { authenticateUser } from "~~/server/utils/authenticateUser";
 
 export default defineCachedEventHandler(
 	async (event) => {
+		await authenticateUser(event);
 		const categoryId = getRouterParam(event, "categoryId");
 
 		if (!categoryId) {
@@ -22,6 +24,6 @@ export default defineCachedEventHandler(
 		return service.getCategoryById(categoryId);
 	},
 	{
-		maxAge: 60,
+		maxAge: 3600,
 	},
 );

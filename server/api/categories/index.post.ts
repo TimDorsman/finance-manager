@@ -1,18 +1,12 @@
-import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
+import { serverSupabaseClient } from "#supabase/server";
 import { readBody } from "h3";
 import type { CategoryScope } from "~/enums/category-scope";
 import { CategoryRepository } from "~~/server/repositories/category.repository";
 import { CategoryService } from "~~/server/services/category.service";
+import { authenticateUser } from "~~/server/utils/authenticateUser";
 
 export default defineEventHandler(async (event) => {
-	const user = await serverSupabaseUser(event);
-
-	if (!user) {
-		throw createError({
-			statusCode: 401,
-			statusMessage: "Unauthorized",
-		});
-	}
+	await authenticateUser(event);
 
 	const body = await readBody<{
 		name: string;

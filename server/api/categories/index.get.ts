@@ -4,8 +4,8 @@ import { CategoryService } from "~~/server/services/category.service";
 import { authenticateUser } from "~~/server/utils/authenticateUser";
 
 export default defineEventHandler(async (event) => {
-	const supabase = await serverSupabaseClient(event);
 	const user = await authenticateUser(event);
+	const supabase = await serverSupabaseClient(event);
 	const repo = new CategoryRepository(supabase);
 	const service = new CategoryService(repo);
 
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 			return service.getCategories();
 		},
 		{
-			maxAge: 5,
+			maxAge: 30,
 			name: "getCategories",
 			getKey: () => `all_categories_${user?.sub}`,
 		},
