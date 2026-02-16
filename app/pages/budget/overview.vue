@@ -7,7 +7,7 @@ const {
 	data: categories,
 	pending: categoriesPending,
 	error: categoriesError,
-} = await useFetch<Category[]>("/api/categories", {
+} = useFetch<Category[]>("/api/categories", {
 	watch: [household],
 	default: () => [],
 });
@@ -16,7 +16,7 @@ const {
 	data: transactions,
 	pending: transactionsPending,
 	error: transactionsError,
-} = await useFetch<Transaction[]>("/api/transactions", {
+} = useFetch<Transaction[]>("/api/transactions", {
 	watch: [household],
 	default: () => [],
 });
@@ -59,13 +59,13 @@ const categoriesWithTransactions = computed(() => {
 		class="text-2xl md:text-4xl font-semibold tracking-tight text-primary mb-8 md:mb-16"
 	>
 		Household
-		<span class="font-bold text-secondary dark:text-white">
+		<span v-if="household" class="font-bold text-secondary dark:text-white">
 			{{ household?.name }}
 		</span>
+		<USkeleton v-else class="ml-2 inline-block h-6 w-32" />
 	</h2>
 
-	<div v-if="pending">Loading</div>
-	<div v-else-if="error">Failed to load</div>
+	<div v-if="error">Failed to load</div>
 
 	<div v-else>
 		<div
@@ -90,13 +90,16 @@ const categoriesWithTransactions = computed(() => {
 		</div>
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 mt-6">
-			<BudgetCard
-				v-for="category in categoriesWithTransactions"
-				:key="category.id"
-				:id="category.id"
-				:name="category.name"
-				:transactions="category.transactions"
-			/>
+			<BudgetCardSkeleton v-if="pending" v-for="n in 4" :key="n" />
+			<template v-else>
+				<BudgetCard
+					v-for="category in categoriesWithTransactions"
+					:key="category.id"
+					:id="category.id"
+					:name="category.name"
+					:transactions="category.transactions"
+				/>
+			</template>
 		</div>
 	</div>
 </template>

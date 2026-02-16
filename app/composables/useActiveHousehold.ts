@@ -1,14 +1,18 @@
 export function useActiveHousehold() {
-	const household = useState<{
-		id: string;
-		name: string;
-		role: string;
-	} | null>("household", () => null);
+	const household = useState<Household | null>("household", () => null);
 
-	async function fetchHousehold() {
-		const data = await $fetch("/api/household");
-		household.value = data;
-	}
+	const { data, pending, error, refresh } = useFetch<Household | null>(
+		"/api/household",
+	);
 
-	return { household, fetchHousehold };
+	watchEffect(() => {
+		household.value = data.value ?? null;
+	});
+
+	return {
+		household,
+		pending,
+		error,
+		refresh,
+	};
 }

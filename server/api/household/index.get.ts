@@ -6,5 +6,6 @@ export default defineEventHandler(async (event) => {
 	const supabase = await serverSupabaseClient(event);
 	const repo = new HouseholdRepository(supabase);
 	const service = new HouseholdService(repo);
+
 	return await service.getHousehold();
 });

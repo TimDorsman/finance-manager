@@ -38,27 +38,28 @@ const categoryId = route.params.categoryId as string;
 
 const table = useTemplateRef("table");
 
-const { data: category, error: categoryError } = await useFetch<Category>(
-	`api/categories/${categoryId}`,
-);
+const {
+	data: category,
+	pending: categoryPending,
+	error: categoryError,
+} = useFetch<Category>(`api/categories/${categoryId}`);
 
-const { data: transactions } = await useFetch<Transaction[]>(
-	`/api/transactions`,
-	{
-		method: "GET",
-		params: {
-			categoryId,
-		},
-		default: () => [],
-		onResponseError({ response }) {
-			throw toPageError(
-				response._data,
-				response.status,
-				"Failed to load transactions.",
-			);
-		},
+const { data: transactions, pending: transactionsPending } = useFetch<
+	Transaction[]
+>(`/api/transactions`, {
+	method: "GET",
+	params: {
+		categoryId,
 	},
-);
+	default: () => [],
+	onResponseError({ response }) {
+		throw toPageError(
+			response._data,
+			response.status,
+			"Failed to load transactions.",
+		);
+	},
+});
 
 if (categoryError.value) {
 	throw toPageError(categoryError.value, 404, "Category not found.");
@@ -104,7 +105,7 @@ const deleteCurrentCategory = async () => {
 			method: "DELETE",
 		});
 
-		await navigateTo("/budget/overview");
+		navigateTo("/budget/overview");
 	} catch (err: any) {
 		errorMessage.value =
 			err?.data?.statusMessage || "Failed to delete category.";
