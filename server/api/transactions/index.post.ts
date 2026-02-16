@@ -1,16 +1,10 @@
-import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
+import { serverSupabaseClient } from "#supabase/server";
 import { TransactionRepository } from "~~/server/repositories/transaction.repository";
 import { TransactionService } from "~~/server/services/transaction.service";
+import { authenticateUser } from "~~/server/utils/authenticateUser";
 
 export default defineEventHandler(async (event) => {
-	const user = await serverSupabaseUser(event);
-
-	if (!user) {
-		throw createError({
-			statusCode: 401,
-			statusMessage: "Unauthorized",
-		});
-	}
+	await authenticateUser(event);
 
 	const body = await readBody<{
 		amount: number;

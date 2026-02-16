@@ -1,10 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~~/shared/types/database";
+import type { Household } from "~~/shared/types/household";
 
 export class HouseholdRepository {
 	constructor(private readonly supabase: SupabaseClient<Database>) {}
 
-	async getCurrent() {
+	async getCurrent(): Promise<Household | null> {
 		const { data, error } = await this.supabase
 			.from("household_members")
 			.select("household:households(id, name), role")

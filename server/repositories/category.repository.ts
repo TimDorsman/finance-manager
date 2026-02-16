@@ -18,14 +18,13 @@ export class CategoryRepository {
 		}
 	}
 
-	async select() {
+	async selectAll() {
 		const { data, error } = await this.supabase.from("categories").select(`
 			id,
 			name,
 			scope,
 			ownerUserId:owner_user_id,
 			householdId:household_id,
-			isArchived:is_archived,
 			createdAt:created_at
 		`);
 
@@ -46,7 +45,6 @@ export class CategoryRepository {
 				scope,
 				ownerUserId:owner_user_id,
 				householdId:household_id,
-				isArchived:is_archived,
 				createdAt:created_at
 			`,
 			)

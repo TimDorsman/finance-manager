@@ -38,27 +38,26 @@ const categoryId = route.params.categoryId as string;
 
 const table = useTemplateRef("table");
 
-const { data: category, error: categoryError } = await useFetch<Category>(
+const { data: category, error: categoryError } = useFetch<Category>(
 	`api/categories/${categoryId}`,
 );
 
-const { data: transactions } = await useFetch<Transaction[]>(
-	`/api/transactions`,
-	{
-		method: "GET",
-		params: {
-			categoryId,
-		},
-		default: () => [],
-		onResponseError({ response }) {
-			throw toPageError(
-				response._data,
-				response.status,
-				"Failed to load transactions.",
-			);
-		},
+const { data: transactions, pending: transactionsPending } = useFetch<
+	Transaction[]
+>(`/api/transactions`, {
+	method: "GET",
+	params: {
+		categoryId,
 	},
-);
+	default: () => [],
+	onResponseError({ response }) {
+		throw toPageError(
+			response._data,
+			response.status,
+			"Failed to load transactions.",
+		);
+	},
+});
 
 if (categoryError.value) {
 	throw toPageError(categoryError.value, 404, "Category not found.");
@@ -104,7 +103,7 @@ const deleteCurrentCategory = async () => {
 			method: "DELETE",
 		});
 
-		await navigateTo("/budget/overview");
+		navigateTo("/budget/overview");
 	} catch (err: any) {
 		errorMessage.value =
 			err?.data?.statusMessage || "Failed to delete category.";
@@ -241,7 +240,9 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 		<div>
 			<span class="flex items-center gap-2">
 				<span class="text-xl font-medium">Spent:</span>
+				<USkeleton v-if="transactionsPending" class="h-8 w-10" />
 				<span
+					v-else
 					class="text-3xl font-medium text-green-400 dark:text-green-700"
 				>
 					€{{ getTotalAmountSpendCurrentMonth }}
@@ -256,6 +257,9 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 		class="w-11/12 md:w-4/5 mx-auto mb-4 block"
 		@bar-clicked="(response) => console.log('Event!', response)"
 	/>
+	<div v-else class="h-1/4 w-8/10 mx-auto px-4 mb-4">
+		<USkeleton class="h-full w-full" />
+	</div>
 
 	<UAlert
 		v-if="errorMessage"
@@ -267,7 +271,9 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 	/>
 
 	<div class="overflow-x-auto max-w-[90vw] mx-auto px-4">
+		<TableSkeleton v-if="transactionsPending" :columns="4" :rows="10" />
 		<UTable
+			v-else
 			v-model:pagination="pagination"
 			:data="transactionsView"
 			:columns="columns"

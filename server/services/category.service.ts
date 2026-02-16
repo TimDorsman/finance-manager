@@ -1,20 +1,15 @@
 import type { CategoryRepository } from "../repositories/category.repository";
+import { authenticateUser } from "../utils/authenticateUser";
 
 export class CategoryService {
 	constructor(private readonly repo: CategoryRepository) {}
 	async addCategory(name: string, scope: Scope, householdId: string) {
 		if (!name.trim()) {
-			throw createError({
-				statusCode: 400,
-				statusMessage: "Category name is required",
-			});
+			throw new Error("Category name is required");
 		}
 
 		if (!["personal", "shared"].includes(scope)) {
-			throw createError({
-				statusCode: 400,
-				statusMessage: "Invalid scope",
-			});
+			throw new Error("Invalid scope");
 		}
 
 		await this.repo.insert(name, scope, householdId);
@@ -32,7 +27,7 @@ export class CategoryService {
 	}
 
 	async getCategories() {
-		const categories = await this.repo.select();
+		const categories = await this.repo.selectAll();
 
 		return categories.map((category) => ({
 			...category,

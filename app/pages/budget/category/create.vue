@@ -42,7 +42,7 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 	}
 
 	try {
-		await useFetch("/api/categories", {
+		await $fetch("/api/categories", {
 			method: "POST",
 			body: {
 				name,

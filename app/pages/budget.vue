@@ -1,7 +1,5 @@
 <script setup lang="ts">
-const { fetchHousehold } = useActiveHousehold();
-
-await fetchHousehold();
+useActiveHousehold();
 </script>
 
 <template>
