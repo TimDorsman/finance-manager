@@ -26,8 +26,6 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
-	const supabase = await serverSupabaseClient(event);
-
 	const repo = new CategoryRepository(supabase);
 	const service = new CategoryService(repo);
 

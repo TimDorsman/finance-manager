@@ -1,4 +1,3 @@
-
 export function useOutOfStockSuppliesService() {
 	const { fetchAll, remove } = useOutOfStockRepository();
 

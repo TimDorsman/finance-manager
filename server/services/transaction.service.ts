@@ -26,7 +26,7 @@ export class TransactionService {
 
 	async deleteTransaction(transactionId: string) {
 		if (!transactionId) {
-			throw new Error("TransactionId is required");
+			throw new Error("Transaction id is required");
 		}
 
 		return await this.repo.deleteById(transactionId);
@@ -46,15 +46,15 @@ export class TransactionService {
 		}
 
 		if (!input.categoryId) {
-			throw new Error("CategoryId is required");
+			throw new Error("Category id is required");
 		}
 
 		if (!input.householdId) {
-			throw new Error("HouseholdId is required");
+			throw new Error("Household id is required");
 		}
 
 		if (!input.userId) {
-			throw new Error("UserId is required");
+			throw new Error("User id is required");
 		}
 	}
 }

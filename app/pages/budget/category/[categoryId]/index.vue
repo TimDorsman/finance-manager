@@ -46,9 +46,6 @@ const { data: transactions } = await useFetch<Transaction[]>(
 	`/api/transactions`,
 	{
 		method: "GET",
-		headers: {
-			"Content-Type": "application/json",
-		},
 		params: {
 			categoryId,
 		},
