@@ -66,8 +66,6 @@ watch(
 	},
 	{ immediate: true },
 );
-
-console.log({ avatarSrc: avatarSrc.value });
 </script>
 
 <template>
