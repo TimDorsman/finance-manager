@@ -5,5 +5,10 @@ export function useActiveHousehold() {
 		role: string;
 	} | null>("household", () => null);
 
-	return { household };
+	async function fetchHousehold() {
+		const data = await $fetch("/api/household");
+		household.value = data;
+	}
+
+	return { household, fetchHousehold };
 }
