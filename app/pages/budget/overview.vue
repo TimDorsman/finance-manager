@@ -3,47 +3,55 @@ import { HouseholdRole } from "~/enums/household-role";
 
 const { household } = useActiveHousehold();
 
-const { getCategories } = useCategoryService();
-const { getTransactions } = useTransactionService();
-
 const {
 	data: categories,
-	pending,
-	error,
-	refresh,
-} = await useAsyncData(
-	"categoriesWithTransactions",
-	async () => {
-		if (!household.value) return [];
+	pending: categoriesPending,
+	error: categoriesError,
+} = await useFetch<Category[]>("/api/categories", {
+	watch: [household],
+	default: () => [],
+});
 
-		const [categoryResult, transactions] = await Promise.all([
-			getCategories(),
-			getTransactions(),
-		]);
+const {
+	data: transactions,
+	pending: transactionsPending,
+	error: transactionsError,
+} = await useFetch<Transaction[]>("/api/transactions", {
+	watch: [household],
+	default: () => [],
+});
 
-		const categoryList = categoryResult.data.value ?? [];
-
-		const transactionsByCategoryId = transactions.reduce<
-			Record<string, typeof transactions>
-		>((acc, transaction) => {
-			const key = transaction.categoryId;
-			if (!acc[key]) {
-				acc[key] = [];
-			}
-			acc[key].push(transaction);
-			return acc;
-		}, {});
-
-		return categoryList.map((category) => ({
-			...category,
-			transactions: transactionsByCategoryId[category.id] ?? [],
-		}));
-	},
-	{
-		default: () => [],
-		watch: [household],
-	},
+const pending = computed(
+	() => categoriesPending.value || transactionsPending.value,
 );
+
+const error = computed(() => categoriesError.value || transactionsError.value);
+
+const categoriesWithTransactions = computed(() => {
+	const categoryList = Array.isArray(categories.value)
+		? categories.value
+		: [];
+
+	const transactionList = Array.isArray(transactions.value)
+		? transactions.value
+		: [];
+
+	const transactionsByCategoryId = transactionList.reduce(
+		(acc: Record<string, Transaction[]>, transaction) => {
+			const key = transaction.categoryId;
+			if (!key) return acc;
+
+			(acc[key] ??= []).push(transaction);
+			return acc;
+		},
+		{},
+	);
+
+	return categoryList.map((category) => ({
+		...category,
+		transactions: transactionsByCategoryId[category.id] ?? [],
+	}));
+});
 </script>
 
 <template>
@@ -83,7 +91,7 @@ const {
 
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-x-6 mt-6">
 			<BudgetCard
-				v-for="category in categories"
+				v-for="category in categoriesWithTransactions"
 				:key="category.id"
 				:id="category.id"
 				:name="category.name"

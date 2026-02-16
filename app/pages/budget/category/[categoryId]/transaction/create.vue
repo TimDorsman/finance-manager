@@ -7,9 +7,8 @@ const user = useSupabaseUser();
 const categoryId = route.params.categoryId as string;
 
 const { household } = useActiveHousehold();
-const { addTransaction } = useTransactionService();
-const { getCategoryById } = useCategoryService();
-const { data: category } = getCategoryById(categoryId);
+
+const { data: category } = useFetch<Category>(`/api/categories/${categoryId}`);
 
 const schema = z.object({
 	date: z.string().refine((v) => !Number.isNaN(Date.parse(v)), {
@@ -19,11 +18,17 @@ const schema = z.object({
 	description: z.string().min(1, "Description is required"),
 });
 type Schema = z.output<typeof schema>;
-
 type FormState = {
 	date: string;
 	amount: number | null;
 	description: string;
+};
+type FieldModel = keyof FormState;
+type FormField = {
+	label: string;
+	name: FieldModel;
+	type: string;
+	model: FieldModel;
 };
 
 const message = ref<{ text: string | null; type: "error" | "success" | null }>({
@@ -42,59 +47,60 @@ const messageTitle = computed(() =>
 	message.value.type === "success" ? "Success" : "Something went wrong",
 );
 
-type FieldModel = keyof FormState;
-
-type FormField = {
-	label: string;
-	name: FieldModel;
-	type: string;
-	model: FieldModel;
-};
+const messageIcon = computed(() =>
+	message.value.type === "success"
+		? "i-lucide-check-circle"
+		: "i-lucide-x-circle",
+);
 
 const baseFormFields: Array<Omit<FormField, "model">> = [
 	{ label: "Date", name: "date", type: "date" },
 	{ label: "Amount", name: "amount", type: "number" },
-	{
-		label: "Description",
-		name: "description",
-		type: "text",
-	},
+	{ label: "Description", name: "description", type: "text" },
 ];
 
 const formFields: FormField[] = baseFormFields.map((field) => ({
 	...field,
 	model: field.name,
 }));
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
 	message.value = { type: null, text: null };
 	try {
-		await addTransaction({
-			amount: event.data.amount,
-			categoryId,
-			date: event.data.date,
-			description: event.data.description,
-			householdId: household.value?.id!,
-			userId: user.value?.sub!,
+		$fetch("/api/transactions", {
+			method: "POST",
+			body: {
+				amount: event.data.amount,
+				categoryId,
+				date: event.data.date,
+				description: event.data.description,
+				householdId: household.value?.id!,
+				userId: user.value?.sub!,
+			},
 		});
+
 		message.value = {
 			type: "success",
 			text: "Transaction created successfully.",
 		};
 		Object.assign(formState, initialState());
-	} catch (error) {
+	} catch (error: unknown) {
 		console.error(error);
+
+		if (error instanceof Error) {
+			message.value = {
+				type: "error",
+				text: error.message,
+			};
+			return;
+		}
+
 		message.value = {
 			type: "error",
 			text: "Failed to create transaction. Please try again.",
 		};
 	}
 }
-
-const messageIcon = computed(() =>
-	message.value.type === "success"
-		? "i-lucide-check-circle"
-		: "i-lucide-x-circle",
-);
 </script>
 
 <template>

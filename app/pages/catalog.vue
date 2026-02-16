@@ -7,7 +7,17 @@ const { fetchSuppliesOrderedByGroup, markSupplyOutOfStock } =
 const supplies = ref<Map<string, SupplyListItemByGroup[]>>(new Map());
 
 onMounted(async () => {
-	const { data } = await fetchSuppliesOrderedByGroup();
+	// @TODO: Change this to an API or remove it entirely.
+	const { data } = await useAsyncData(
+		"supplies:ordered-by-group",
+		() => fetchSuppliesOrderedByGroup(),
+		{
+			default: () => [],
+			getCachedData(key, nuxtApp) {
+				return nuxtApp.payload.data[key] || nuxtApp.static.data[key];
+			},
+		},
+	);
 	const response = (data.value ?? []) as SupplyListItemByGroup[];
 
 	const mappedSupplies = new Map<string, SupplyListItemByGroup[]>();

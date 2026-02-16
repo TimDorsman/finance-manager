@@ -1,7 +1,7 @@
 <script setup lang="ts">
-const { loadHousehold } = useHouseholdService();
+const { fetchHousehold } = useActiveHousehold();
 
-await loadHousehold();
+await fetchHousehold();
 </script>
 
 <template>
