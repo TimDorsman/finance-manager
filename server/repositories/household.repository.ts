@@ -1,10 +1,11 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~~/shared/types/database";
 
-export function useHouseholdRepository() {
-	const supabase = useSupabaseClient<Database>();
+export class HouseholdRepository {
+	constructor(private readonly supabase: SupabaseClient<Database>) {}
 
-	async function fetchHousehold() {
-		const { data, error } = await supabase
+	async getCurrent() {
+		const { data, error } = await this.supabase
 			.from("household_members")
 			.select("household:households(id, name), role")
 			.single();
@@ -22,6 +23,4 @@ export function useHouseholdRepository() {
 			role: data.role,
 		};
 	}
-
-	return { fetchHousehold };
 }

@@ -38,24 +38,27 @@ const categoryId = route.params.categoryId as string;
 
 const table = useTemplateRef("table");
 
-const { getTransactionsByCategory, deleteTransaction } =
-	useTransactionService();
-const { deleteCategory, getCategoryById } = useCategoryService();
+const { data: category, error: categoryError } = await useFetch<Category>(
+	`api/categories/${categoryId}`,
+);
 
-const { data: category, error: categoryError } = getCategoryById(categoryId);
-const {
-	data: transactions,
-	refresh: refreshTransactions,
-	error: transactionsError,
-} = await getTransactionsByCategory(categoryId);
-
-if (transactionsError.value) {
-	throw toPageError(
-		transactionsError.value,
-		400,
-		"Failed to load transactions.",
-	);
-}
+const { data: transactions } = await useFetch<Transaction[]>(
+	`/api/transactions`,
+	{
+		method: "GET",
+		params: {
+			categoryId,
+		},
+		default: () => [],
+		onResponseError({ response }) {
+			throw toPageError(
+				response._data,
+				response.status,
+				"Failed to load transactions.",
+			);
+		},
+	},
+);
 
 if (categoryError.value) {
 	throw toPageError(categoryError.value, 404, "Category not found.");
@@ -94,29 +97,30 @@ const deleteConfirmLabel = computed(() => {
 });
 
 const deleteCurrentCategory = async () => {
+	errorMessage.value = null;
+
 	try {
-		const deleteError = await deleteCategory(categoryId);
-		if (deleteError) {
-			errorMessage.value = `Failed to delete category: ${deleteError.message}`;
-			return;
-		}
+		await $fetch(`/api/categories/${categoryId}`, {
+			method: "DELETE",
+		});
 
 		await navigateTo("/budget/overview");
-	} catch {
-		errorMessage.value = "Failed to delete category.";
+	} catch (err: any) {
+		errorMessage.value =
+			err?.data?.statusMessage || "Failed to delete category.";
 	}
 };
 
 const deleteCurrentTransaction = async (id: string) => {
 	try {
-		const result = await deleteTransaction(id);
-		if (!result) {
-			errorMessage.value = "Failed to delete transaction";
+		await $fetch(`/api/transactions/${id}`, {
+			method: "DELETE",
+		});
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			errorMessage.value = error.message;
 			return;
 		}
-
-		await refreshTransactions();
-	} catch {
 		errorMessage.value = "Failed to delete transaction";
 	}
 };
@@ -157,13 +161,6 @@ watch(isDeleteModalOpen, (open) => {
 		setTimeout(() => {
 			pendingDelete.value = null;
 		}, 300);
-	}
-});
-
-watch(transactionsError, (newError) => {
-	if (newError) {
-		errorMessage.value = "Failed to load transactions.";
-		transactions.value = [];
 	}
 });
 

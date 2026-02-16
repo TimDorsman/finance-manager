@@ -4,7 +4,6 @@ import * as z from "zod";
 import { CategoryScope } from "~/enums/category-scope";
 
 const { household } = useActiveHousehold();
-const { addCategory } = useCategoryService();
 
 const message = ref<{ text: string | null; type: "error" | "success" | null }>({
 	type: null,
@@ -42,21 +41,34 @@ async function onSubmit(payload: FormSubmitEvent<Schema>) {
 		return;
 	}
 
-	const error = await addCategory(name, scope, household.value.id);
+	try {
+		await useFetch("/api/categories", {
+			method: "POST",
+			body: {
+				name,
+				scope,
+				householdId: household.value?.id,
+			},
+		});
 
-	if (error === null) {
 		message.value = {
 			text: "Category created successfully.",
 			type: "success",
 		};
 		state.name = "";
 		state.scope = CategoryScope.Household;
-		return;
-	}
-
-	if (error) {
-		message.value = { text: error.message, type: "error" };
-		return;
+	} catch (error: unknown) {
+		if (error instanceof Error) {
+			message.value = {
+				text: error.message,
+				type: "error",
+			};
+			return;
+		}
+		message.value = {
+			text: "Failed to create category.",
+			type: "error",
+		};
 	}
 }
 
