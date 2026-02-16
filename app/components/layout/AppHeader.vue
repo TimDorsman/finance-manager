@@ -102,6 +102,7 @@ console.log({ avatarSrc: avatarSrc.value });
 					side="bottom"
 					align="end"
 					:side-offset="8"
+					:dismissible="true"
 				>
 					<Avatar :src="avatarSrc" size="sm" class="cursor-pointer" />
 					<template #content>
