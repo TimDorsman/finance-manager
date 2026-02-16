@@ -193,6 +193,8 @@ function getDropdownActions(row: TransactionView) {
 const getTotalAmountSpendCurrentMonth = computed(() =>
 	getSpendAmountByMonth(transactions.value, currentSelectedMonth.value),
 );
+
+const test = ref(true);
 </script>
 
 <template>
@@ -268,7 +270,9 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 	/>
 
 	<div class="overflow-x-auto max-w-[90vw] mx-auto px-4">
+		<TableSkeleton v-if="test" :columns="4" :rows="10" />
 		<UTable
+			v-else
 			v-model:pagination="pagination"
 			:data="transactionsView"
 			:columns="columns"
