@@ -32,7 +32,7 @@ export class CategoryService {
 	}
 
 	async getCategories() {
-		const categories = await this.repo.select();
+		const categories = await this.repo.selectAll();
 
 		return categories.map((category) => ({
 			...category,

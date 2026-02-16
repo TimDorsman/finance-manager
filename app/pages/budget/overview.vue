@@ -8,6 +8,7 @@ const {
 	pending: categoriesPending,
 	error: categoriesError,
 } = useFetch<Category[]>("/api/categories", {
+	immediate: false,
 	watch: [household],
 	default: () => [],
 });
@@ -17,6 +18,7 @@ const {
 	pending: transactionsPending,
 	error: transactionsError,
 } = useFetch<Transaction[]>("/api/transactions", {
+	immediate: false,
 	watch: [household],
 	default: () => [],
 });
