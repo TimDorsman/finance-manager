@@ -4,7 +4,7 @@
 	>
 		<div class="flex flex-row justify-between gap-2 align-start">
 			<h4 class="text-lg font-medium text-primary">
-				<Skeleton class="h-2 w-24" />
+				<USkeleton class="h-2 w-24" />
 			</h4>
 			<div class="cursor-pointer self-start">
 				<UButton
