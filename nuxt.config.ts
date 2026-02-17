@@ -45,13 +45,10 @@ export default defineNuxtConfig({
 		],
 	},
 	components: [
-		// 1️⃣ Shared global components
 		{
 			path: "~/components",
 			pathPrefix: false,
 		},
-
-		// 2️⃣ Feature components
 		{
 			path: "~/features",
 			pattern: "**/components/*.vue",
