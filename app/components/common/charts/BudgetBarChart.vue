@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useCssVar } from "@vueuse/core";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import {
 	Chart as ChartJS,
 	Title,
@@ -35,8 +35,25 @@ ChartJS.register(
 	LinearScale,
 );
 
+const legendSpacingPlugin = {
+	id: "legendSpacingPlugin",
+	beforeInit(chart: Chart) {
+		const fitValue = chart.legend?.fit;
+		if (!fitValue) {
+			return;
+		}
+
+		chart.legend.fit = function fit() {
+			fitValue.bind(chart.legend)();
+			this.height += 14;
+		};
+	},
+};
+
 const budgetColor = useCssVar("--ui-primary");
 const spendColor = useCssVar("--ui-secondary");
+const chartTextColor = useCssVar("--ui-text-muted");
+const colorMode = useColorMode();
 const chartData = ref({
 	labels: [
 		"Jan",
@@ -72,27 +89,38 @@ const chartData = ref({
 	],
 });
 
-const chartOptions = ref({
+const chartOptions = computed(() => ({
 	responsive: true,
 	maintainAspectRatio: false,
 	scales: {
 		x: {
 			stacked: false,
 			ticks: {
-				color: "#6B7280", // X-axis label color
+				color: chartTextColor.value,
 			},
 		},
 		y: {
 			beginAtZero: true,
 			ticks: {
+				color: chartTextColor.value,
 				callback: function (tickValue: string | number) {
 					return `$${tickValue}`;
 				},
 			},
-			color: "#6B7280",
 		},
 	},
 	plugins: {
+		legend: {
+			position: "top" as const,
+			labels: {
+				color: chartTextColor.value,
+				padding: 12,
+				usePointStyle: true,
+				pointStyle: "rectRounded",
+				boxWidth: 8,
+				boxHeight: 8,
+			},
+		},
 		tooltip: {
 			callbacks: {
 				label: (ctx: any) => `${ctx.dataset.label}: €${ctx.raw}`,
@@ -119,11 +147,17 @@ const chartOptions = ref({
 			spent: props.data[index] ?? 0,
 		});
 	},
-});
+}));
 </script>
 
 <template>
 	<div class="h-40 md:h-60">
-		<Bar :data="chartData" :options="chartOptions" />
+		<Bar
+			:key="`budget-chart-${colorMode.value}`"
+			:data="chartData"
+			:options="chartOptions"
+			:plugins="[legendSpacingPlugin]"
+		/>
 	</div>
 </template>
+

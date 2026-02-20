@@ -46,8 +46,8 @@ const getSpendCurrentMonth = computed(() => {
 				<span class="hidden sm:inline">View details</span>
 			</UButton>
 		</div>
-		<p class="font-medium mt-2">This month:</p>
-		<ul class="list-disc pl-5">
+		<p class="font-medium mt-2 text-slate-600 dark:text-slate-300">This month:</p>
+		<ul class="list-disc pl-5 text-slate-600 dark:text-slate-300">
 			<li>Budget: €200</li>
 			<li>Spent: €{{ getSpendCurrentMonth }}</li>
 		</ul>
@@ -55,3 +55,4 @@ const getSpendCurrentMonth = computed(() => {
 		<BudgetBarChart :data="getSpendAmountPerMonth(transactions)" />
 	</div>
 </template>
+

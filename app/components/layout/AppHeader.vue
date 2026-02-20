@@ -57,6 +57,19 @@ const handleLogout = async () => {
 
 const avatarSrc = ref<string | undefined>(undefined);
 
+const navigationMenuUi = {
+	list: "gap-2",
+	link: "text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700/60 transition-colors",
+	linkLeadingIcon:
+		"text-slate-500 group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-white transition-colors",
+	linkLabel: "text-inherit",
+	childLink:
+		"text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700/60 rounded-md transition-colors",
+	childLinkIcon:
+		"text-slate-500 group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-white transition-colors",
+	childLinkLabel: "text-inherit",
+};
+
 watch(
 	() => user.value,
 	(user) => {
@@ -85,13 +98,19 @@ watch(
 
 		<UNavigationMenu
 			:items="items"
-			:ui="{
-				list: 'gap-2',
-			}"
+			variant="link"
+			highlight
+			highlight-color="success"
+			color="neutral"
+			:ui="navigationMenuUi"
 		/>
 
 		<template #right>
-			<UColorModeButton />
+			<UColorModeButton
+				color="neutral"
+				variant="ghost"
+				class="text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700/60"
+			/>
 
 			<ClientOnly>
 				<UPopover
@@ -159,9 +178,15 @@ watch(
 				<UNavigationMenu
 					:items="items"
 					orientation="vertical"
+					variant="link"
+					highlight
+					highlight-color="success"
+					color="neutral"
 					class="-mx-2.5"
+					:ui="navigationMenuUi"
 				/>
 			</ClientOnly>
 		</template>
 	</UHeader>
 </template>
+

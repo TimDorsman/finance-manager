@@ -32,9 +32,18 @@ const pagination = ref({
 });
 
 const currentSelectedMonth = ref(new Date());
+const browserLocale = ref("en-US");
 
 const route = useRoute();
 const categoryId = route.params.categoryId as string;
+const selectedMonthQuery = computed(() => {
+	const year = currentSelectedMonth.value.getFullYear();
+	const month = String(currentSelectedMonth.value.getMonth() + 1).padStart(
+		2,
+		"0",
+	);
+	return `${year}-${month}-01`;
+});
 
 const table = useTemplateRef("table");
 
@@ -42,9 +51,11 @@ const { data: category, error: categoryError } = useFetch<Category>(
 	`api/categories/${categoryId}`,
 );
 
-const { data: transactions, pending: transactionsPending } = useFetch<
-	Transaction[]
->(`/api/transactions`, {
+const {
+	data: allTransactions,
+	pending: allTransactionsPending,
+	error: transactionsError,
+} = useFetch<Transaction[]>(`/api/transactions`, {
 	method: "GET",
 	params: {
 		categoryId,
@@ -59,8 +70,36 @@ const { data: transactions, pending: transactionsPending } = useFetch<
 	},
 });
 
+const {
+	data: transactions,
+	pending: transactionsPending,
+	refresh: refreshTransactionsByMonth,
+} = useFetch<Transaction[]>(`/api/transactions`, {
+	method: "GET",
+	params: computed(() => ({
+		categoryId,
+		month: selectedMonthQuery.value,
+	})),
+	default: () => [],
+	onResponseError({ response }) {
+		throw toPageError(
+			response._data,
+			response.status,
+			"Failed to load transactions.",
+		);
+	},
+});
+
 if (categoryError.value) {
 	throw toPageError(categoryError.value, 404, "Category not found.");
+}
+
+if (transactionsError.value) {
+	throw toPageError(
+		transactionsError.value,
+		500,
+		"Failed to load transactions.",
+	);
 }
 
 const transactionsView = computed<TransactionView[]>(() =>
@@ -163,6 +202,17 @@ watch(isDeleteModalOpen, (open) => {
 	}
 });
 
+onMounted(() => {
+	if (navigator?.languages?.length) {
+		browserLocale.value = navigator.languages[0] ?? "en-US";
+		return;
+	}
+
+	if (navigator?.language) {
+		browserLocale.value = navigator.language;
+	}
+});
+
 const columns = computed(() => [
 	...Object.keys(transactionsView.value[0] ?? {})
 		.filter((key) => key !== "id")
@@ -188,8 +238,41 @@ function getDropdownActions(row: TransactionView) {
 	];
 }
 
+const onBarClicked = async (response: {
+	month: number;
+	budget: number;
+	spent: number;
+}) => {
+	const selectedDate = new Date(currentSelectedMonth.value);
+	selectedDate.setMonth(response.month, 1);
+	currentSelectedMonth.value = selectedDate;
+	pagination.value.pageIndex = 0;
+	await refreshTransactionsByMonth();
+};
+
 const getTotalAmountSpendCurrentMonth = computed(() =>
 	getSpendAmountByMonth(transactions.value, currentSelectedMonth.value),
+);
+
+const spentAmountFormatted = computed(() =>
+	new Intl.NumberFormat("en-US", {
+		style: "currency",
+		currency: "EUR",
+		maximumFractionDigits: 2,
+	}).format(getTotalAmountSpendCurrentMonth.value),
+);
+
+const currentSelectedMonthLabel = computed(() =>
+	currentSelectedMonth.value.toLocaleDateString(browserLocale.value, {
+		month: "long",
+		year: "numeric",
+	}),
+);
+
+const currentSelectedMonthName = computed(() =>
+	currentSelectedMonth.value.toLocaleDateString(browserLocale.value, {
+		month: "long",
+	}),
 );
 </script>
 
@@ -231,34 +314,54 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 			</UButton>
 		</div>
 	</div>
-	<div class="flex flex-row justify-between">
+	<div class="flex justify-end gap-6 mt-10 mb-8 md:flex-row md:items-center">
 		<h2
-			class="text-2xl lg:text-4xl font-semibold tracking-tight text-secondary mb-16 dark:text-white w-fit pb-2 border-b-2 border-secondary dark:border-white"
+			class="text-2xl lg:text-4xl font-semibold tracking-tight text-secondary dark:text-white w-fit pb-2 border-b-2 border-secondary dark:border-white"
 		>
 			{{ category?.name }}
 		</h2>
-		<div>
-			<span class="flex items-center gap-2">
-				<span class="text-xl font-medium">Spent:</span>
-				<USkeleton v-if="transactionsPending" class="h-8 w-10" />
-				<span
-					v-else
-					class="text-3xl font-medium text-green-400 dark:text-green-700"
+		<div
+			class="w-full max-w-xs rounded-2xl border border-primary/30 bg-linear-to-br from-primary/15 via-primary/5 to-transparent ring-1 ring-primary/20 shadow-sm px-5 py-4"
+		>
+			<div class="flex items-start justify-between gap-3">
+				<div>
+					<p class="text-xs uppercase tracking-wide text-toned">
+						Spent this month
+					</p>
+					<p class="text-sm light:text-muted mt-1">
+						{{ currentSelectedMonthLabel }}
+					</p>
+				</div>
+				<div
+					class="h-9 w-9 rounded-full bg-primary/15 text-primary flex items-center justify-center ring-1 ring-primary/30"
 				>
-					€{{ getTotalAmountSpendCurrentMonth }}
-				</span>
-			</span>
+					<UIcon name="i-lucide-wallet" class="size-5" />
+				</div>
+			</div>
+			<USkeleton v-if="transactionsPending" class="h-10 w-40 mt-3" />
+			<p
+				v-else
+				class="mt-3 text-xl md:text-3xl lg:text-4xl font-semibold tracking-tight text-highlighted"
+			>
+				{{ spentAmountFormatted }}
+			</p>
 		</div>
 	</div>
 
 	<BudgetBarChart
-		v-if="transactions.length > 0"
-		:data="getSpendAmountPerMonth(transactions)"
+		v-if="allTransactions.length > 0"
+		:data="getSpendAmountPerMonth(allTransactions)"
 		class="w-11/12 md:w-4/5 mx-auto mb-4 block"
-		@bar-clicked="(response) => console.log('Event!', response)"
+		@bar-clicked="onBarClicked"
 	/>
-	<div v-else class="h-1/4 w-8/10 mx-auto px-4 mb-4">
+	<div
+		v-else-if="allTransactionsPending"
+		class="h-1/4 w-8/10 mx-auto px-4 mb-4"
+	>
 		<USkeleton class="h-full w-full" />
+	</div>
+	<div v-else class="w-fit mx-auto px-4 mb-4 text-muted text-sm">
+		No transaction data available for the chart.
 	</div>
 
 	<UAlert
@@ -290,17 +393,15 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 				</div>
 			</template>
 			<template #amount-cell="{ row }">
-				<span> €{{ row.original.amount }} </span>
-			</template>
-			<template #action-cell="{ row }">
-				<UDropdownMenu :items="getDropdownActions(row.original)">
-					<UButton
-						icon="i-lucide-ellipsis-vertical"
-						color="neutral"
-						variant="ghost"
-						aria-label="Actions"
-					/>
-				</UDropdownMenu>
+				<span>
+					{{
+						new Intl.NumberFormat("en-US", {
+							style: "currency",
+							currency: "EUR",
+							maximumFractionDigits: 2,
+						}).format(Number(row.original.amount))
+					}}
+				</span>
 			</template>
 		</UTable>
 	</div>

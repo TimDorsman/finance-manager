@@ -9,6 +9,81 @@
 	--ui-container: var(--container-8xl);
 }
 
+@layer theme {
+	.light {
+		--app-text-strong: #0b0f19;
+		--app-text-muted: #475569;
+		--ui-text-dimmed: #64748b;
+		--ui-text-muted: #475569 !important;
+		--ui-text-toned: #334155;
+		--ui-text: #1e293b;
+		--ui-text-highlighted: #0f172a;
+		--ui-text-inverted: #ffffff;
+		--ui-bg: #edf4ff;
+		--ui-bg-muted: #e3eeff;
+		--ui-bg-elevated: #f8fbff;
+		--ui-bg-accented: #d3e3ff;
+		--ui-bg-inverted: #0f172a;
+		--ui-border: #c3d8fb;
+		--ui-border-muted: #d3e3ff;
+		--ui-border-accented: #aac7f4;
+		--ui-border-inverted: #0f172a;
+	}
+
+	.dark {
+		--app-text-strong: #ffffff;
+		--app-text-muted: #cbd5e1;
+		--ui-text-dimmed: #94a3b8;
+		--ui-text-muted: #cbd5e1;
+		--ui-text-toned: #e2e8f0;
+		--ui-text: #f8fafc;
+		--ui-text-highlighted: #ffffff;
+		--ui-text-inverted: #0f172a;
+		--ui-bg: #0b1220;
+		--ui-bg-muted: #101a2d;
+		--ui-bg-elevated: #15243d;
+		--ui-bg-accented: #1d3252;
+		--ui-bg-inverted: #ffffff;
+		--ui-border: #223a5e;
+		--ui-border-muted: #1c304e;
+		--ui-border-accented: #2a4876;
+		--ui-border-inverted: #ffffff;
+	}
+}
+
+@layer base {
+	body {
+		color: var(--app-text-muted);
+		background-color: var(--ui-bg);
+		background-image:
+			radial-gradient(
+				circle at 15% 10%,
+				rgb(59 130 246 / 0.16),
+				transparent 40%
+			),
+			radial-gradient(
+				circle at 85% 0%,
+				rgb(125 211 252 / 0.2),
+				transparent 32%
+			);
+		background-attachment: fixed;
+	}
+
+	.dark body {
+		background-image:
+			radial-gradient(
+				circle at 15% 12%,
+				rgb(56 189 248 / 0.14),
+				transparent 36%
+			),
+			radial-gradient(
+				circle at 82% 4%,
+				rgb(37 99 235 / 0.16),
+				transparent 35%
+			);
+	}
+}
+
 html,
 body,
 #__nuxt {
