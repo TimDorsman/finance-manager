@@ -18,8 +18,8 @@ export type TransactionQueryOptions = {
 export type AggregationPeriod = "day" | "month" | "year";
 
 export type PeriodSumRow = {
-	period: string; // date_trunc returns timestamp
-	total: string; // numeric aggregate comes back as string
+	period: string;
+	total: string;
 };
 
 export type TransactionPeriodSummary = {

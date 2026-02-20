@@ -21,8 +21,6 @@ const title = computed(() => {
 });
 
 const description = computed(() => {
-	// 1. Check if we have a custom message from the error object
-	// Note: props.error?.message contains the string you passed to showError
 	if (
 		props.error?.message &&
 		props.error.message !== String(props.error.statusCode)
@@ -30,7 +28,6 @@ const description = computed(() => {
 		return props.error.message;
 	}
 
-	// 2. Fallback to your default hardcoded messages
 	switch (props.error?.statusCode) {
 		case 404:
 			return "I'm so sorry but you aren't supposed to see this. I'm asking you nicely to leave... NOW!";

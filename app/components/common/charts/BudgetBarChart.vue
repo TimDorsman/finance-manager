@@ -25,7 +25,6 @@ const emit = defineEmits<{
 	): void;
 }>();
 
-// Register Chart.js components
 ChartJS.register(
 	Title,
 	Tooltip,
@@ -79,7 +78,7 @@ const chartOptions = ref({
 		x: {
 			stacked: false,
 			ticks: {
-				color: "#6B7280", // X-axis label color
+				color: "#6B7280",
 			},
 		},
 		y: {

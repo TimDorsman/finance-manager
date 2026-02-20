@@ -1,5 +1,3 @@
-// server/repositories/transaction.repository.ts
-
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "~~/shared/types/database";
 import type {

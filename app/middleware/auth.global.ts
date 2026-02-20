@@ -1,4 +1,3 @@
-// middleware/auth.global.ts
 export default defineNuxtRouteMiddleware(async (to) => {
 	if (import.meta.server) {
 		return;

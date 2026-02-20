@@ -204,7 +204,6 @@ const requestDeleteTransaction = (row: TransactionView) => {
 
 watch(isDeleteModalOpen, (open) => {
 	if (!open) {
-		// Delay resetting pendingDelete to allow modal close animation to finish
 		setTimeout(() => {
 			pendingDelete.value = null;
 		}, 300);
