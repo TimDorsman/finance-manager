@@ -21,6 +21,13 @@ const title = computed(() => {
 });
 
 const description = computed(() => {
+	if (
+		props.error?.message &&
+		props.error.message !== String(props.error.statusCode)
+	) {
+		return props.error.message;
+	}
+
 	switch (props.error?.statusCode) {
 		case 404:
 			return "I'm so sorry but you aren't supposed to see this. I'm asking you nicely to leave... NOW!";

@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { format, startOfMonth, addMonths } from "date-fns";
 import { getPaginationRowModel } from "@tanstack/vue-table";
 import { toPageError } from "~/utils/toPageError";
+import type { H3Error } from "h3";
 
 type TransactionView = Omit<
 	Transaction,
@@ -20,9 +22,15 @@ type PendingDelete =
 			description: string | null;
 	  };
 
+const route = useRoute();
+const categoryId = route.params.categoryId as string;
+
 const UButton = resolveComponent("UButton");
 const UDropdownMenu = resolveComponent("UDropdownMenu");
 
+const now = new Date();
+
+const currentStartOfMonth = ref(new Date(now.getFullYear(), now.getMonth(), 1));
 const errorMessage = ref<string | null>(null);
 const isDeleteModalOpen = ref(false);
 const pendingDelete = ref<PendingDelete | null>(null);
@@ -31,37 +39,77 @@ const pagination = ref({
 	pageSize: 10,
 });
 
-const currentSelectedMonth = ref(new Date());
-
-const route = useRoute();
-const categoryId = route.params.categoryId as string;
-
 const table = useTemplateRef("table");
+const currentYear = computed(() => currentStartOfMonth.value.getFullYear());
 
-const { data: category, error: categoryError } = useFetch<Category>(
-	`api/categories/${categoryId}`,
+const { data: category } = useFetch<Category>(`/api/categories/${categoryId}`, {
+	onResponseError({ response }: any) {
+		const error = response._data as H3Error;
+
+		throw showError(
+			toPageError(
+				error,
+				response.status,
+				error.message ?? "Failed to load category",
+			),
+		);
+	},
+});
+
+const monthDateFrom = computed(() =>
+	format(startOfMonth(currentStartOfMonth.value), "yyyy-MM-dd"),
+);
+const monthDateTo = computed(() =>
+	format(addMonths(startOfMonth(currentStartOfMonth.value), 1), "yyyy-MM-dd"),
 );
 
 const { data: transactions, pending: transactionsPending } = useFetch<
 	Transaction[]
 >(`/api/transactions`, {
 	method: "GET",
-	params: {
+	params: computed(() => ({
 		categoryId,
-	},
+		dateFrom: monthDateFrom.value,
+		dateTo: monthDateTo.value,
+	})),
 	default: () => [],
-	onResponseError({ response }) {
-		throw toPageError(
-			response._data,
-			response.status,
-			"Failed to load transactions.",
-		);
-	},
 });
 
-if (categoryError.value) {
-	throw toPageError(categoryError.value, 404, "Category not found.");
-}
+const yearDateFrom = computed(() =>
+	format(new Date(currentYear.value, 0, 1), "yyyy-MM-dd"),
+);
+const yearDateTo = computed(() =>
+	format(new Date(currentYear.value + 1, 0, 1), "yyyy-MM-dd"),
+);
+
+const { data: transactionSummary, pending: summaryPending } = useFetch<
+	TransactionPeriodSummary[]
+>(`/api/transactions/summary`, {
+	method: "GET",
+	params: computed(() => ({
+		categoryId,
+		dateFrom: yearDateFrom.value,
+		dateTo: yearDateTo.value,
+		period: "month",
+	})),
+	default: () => [],
+});
+
+const monthlySpending = computed(() => {
+	const values = Array(12).fill(0);
+
+	for (const summary of transactionSummary.value ?? []) {
+		const month = Number(summary.period.slice(5, 7)) - 1;
+
+		if (month < 0 || month > 11) {
+			continue;
+		}
+
+		values[month] = summary.total;
+	}
+
+	return values;
+});
 
 const transactionsView = computed<TransactionView[]>(() =>
 	transactions.value.map((transaction) => ({
@@ -156,7 +204,6 @@ const requestDeleteTransaction = (row: TransactionView) => {
 
 watch(isDeleteModalOpen, (open) => {
 	if (!open) {
-		// Delay resetting pendingDelete to allow modal close animation to finish
 		setTimeout(() => {
 			pendingDelete.value = null;
 		}, 300);
@@ -189,8 +236,12 @@ function getDropdownActions(row: TransactionView) {
 }
 
 const getTotalAmountSpendCurrentMonth = computed(() =>
-	getSpendAmountByMonth(transactions.value, currentSelectedMonth.value),
+	getSpendAmountByMonth(transactions.value, currentStartOfMonth.value),
 );
+
+const handleCurrentMonthChange = (month: number) => {
+	currentStartOfMonth.value = new Date(currentYear.value, month, 1);
+};
 </script>
 
 <template>
@@ -252,10 +303,10 @@ const getTotalAmountSpendCurrentMonth = computed(() =>
 	</div>
 
 	<BudgetBarChart
-		v-if="transactions.length > 0"
-		:data="getSpendAmountPerMonth(transactions)"
+		v-if="!summaryPending"
+		:data="monthlySpending"
 		class="w-11/12 md:w-4/5 mx-auto mb-4 block"
-		@bar-clicked="(response) => console.log('Event!', response)"
+		@bar-clicked="(response) => handleCurrentMonthChange(response.month)"
 	/>
 	<div v-else class="h-1/4 w-8/10 mx-auto px-4 mb-4">
 		<USkeleton class="h-full w-full" />
