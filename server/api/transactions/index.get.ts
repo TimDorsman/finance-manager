@@ -6,7 +6,7 @@ import { authenticateUser } from "~~/server/utils/authenticateUser";
 
 export default defineEventHandler(async (event) => {
 	const user = await authenticateUser(event);
-	const { categoryId, month } = getQuery(event);
+	const { categoryId, dateFrom, dateTo } = getQuery(event);
 
 	const supabase = await serverSupabaseClient(event);
 	const repo = new TransactionRepository(supabase);
@@ -17,13 +17,14 @@ export default defineEventHandler(async (event) => {
 			return service.getTransactions({
 				categoryId:
 					typeof categoryId === "string" ? categoryId : undefined,
-				month: typeof month === "string" ? month : undefined,
+				dateFrom: typeof dateFrom === "string" ? dateFrom : undefined,
+				dateTo: typeof dateTo === "string" ? dateTo : undefined,
 			});
 		},
 		{
 			maxAge: 30,
 			name: "getTransactions",
-			getKey: () => `transactions_${user?.sub}_${categoryId}_${month}`,
+			getKey: () => `transactions_${categoryId}_${dateFrom}_${dateTo}`,
 		},
 	);
 

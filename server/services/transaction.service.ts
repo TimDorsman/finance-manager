@@ -1,3 +1,4 @@
+import type { AggregationPeriod } from "~~/shared/types/transaction";
 import { TransactionRepository } from "../repositories/transaction.repository";
 
 export interface CreateTransactionDTO {
@@ -19,9 +20,27 @@ export class TransactionService {
 	}
 
 	async getTransactions(
-		options: { categoryId?: string; month?: string } = {},
+		options: {
+			categoryId?: string;
+			dateFrom?: string;
+			dateTo?: string;
+		} = {},
 	) {
 		return await this.repo.select(options);
+	}
+
+	async getTransactionsSumByPeriod(
+		categoryId: string,
+		dateFrom: string,
+		dateTo: string,
+		period: AggregationPeriod,
+	) {
+		return await this.repo.sumByPeriod(
+			categoryId,
+			dateFrom,
+			dateTo,
+			period,
+		);
 	}
 
 	async deleteTransaction(transactionId: string) {
